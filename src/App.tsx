@@ -3,11 +3,12 @@ import { Header } from './components/Header';
 import { TimelineFeed } from './components/TimelineFeed';
 import { SynthesizerCockpit } from './components/SynthesizerCockpit';
 import { mockClinicalCases } from './data/mockCases';
-import { ClinicalCase, TimelineEvent, DischargeSummary } from './types/clinical';
+import { ClinicalCase, TimelineEvent, DischargeSummary, CareSetting } from './types/clinical';
 
 export const App: React.FC = () => {
   const [cases, setCases] = useState<ClinicalCase[]>(mockClinicalCases);
   const [selectedCaseId, setSelectedCaseId] = useState<string>(mockClinicalCases[0].id);
+  const [selectedCareSetting, setSelectedCareSetting] = useState<'all' | CareSetting>('all');
   const [activeCitationId, setActiveCitationId] = useState<string | null>(null);
   const [isSynthesizing, setIsSynthesizing] = useState<boolean>(false);
   const [synthesisStep, setSynthesisStep] = useState<number>(0);
@@ -18,6 +19,20 @@ export const App: React.FC = () => {
   const handleSelectCase = (caseId: string) => {
     setSelectedCaseId(caseId);
     setActiveCitationId(null);
+  };
+
+  // Handle filtering cases by care setting
+  const handleSelectCareSetting = (setting: 'all' | CareSetting) => {
+    setSelectedCareSetting(setting);
+    setActiveCitationId(null);
+
+    // If changing setting and current case does not match, auto-select first matching case
+    if (setting !== 'all') {
+      const match = cases.find((c) => c.careSetting === setting);
+      if (match && currentCase.careSetting !== setting) {
+        setSelectedCaseId(match.id);
+      }
+    }
   };
 
   // Reset current case to clean mock data
@@ -84,6 +99,80 @@ export const App: React.FC = () => {
     );
   };
 
+  const [isContradictionModalOpen, setIsContradictionModalOpen] = useState(false);
+
+  // Resolve a single contradiction with clinical action
+  const handleResolveContradiction = (
+    contradictionId: string,
+    resolutionId: string,
+    notes?: string
+  ) => {
+    setCases((prev) =>
+      prev.map((c) => {
+        if (c.id === selectedCaseId && c.dataContradictions) {
+          const updatedContradictions = c.dataContradictions.map((conflict) => {
+            if (conflict.id === contradictionId) {
+              return {
+                ...conflict,
+                isResolved: true,
+                selectedResolutionId: resolutionId,
+                resolvedBy: 'Dr. Alex Smith (GMC 7849201)',
+                resolvedAt: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+                resolutionNotes: notes,
+              };
+            }
+            return conflict;
+          });
+
+          // Harmonize clinical data according to the clinician's resolution choice
+          const updatedSummary = { ...c.defaultSummary };
+          if (contradictionId === 'conflict-penicillin-coamox') {
+            updatedSummary.medications = updatedSummary.medications.map((m) =>
+              m.drugName.toLowerCase().includes('co-amoxiclav')
+                ? { ...m, status: 'stopped', dischargeDose: 'CANCELLED - ALLERGY' }
+                : m
+            );
+          }
+          if (contradictionId === 'conflict-potassium-spironolactone') {
+            updatedSummary.medications = updatedSummary.medications.map((m) =>
+              m.drugName.toLowerCase().includes('spironolactone')
+                ? { ...m, status: 'stopped', dischargeDose: 'WITHHELD - HYPERKALEMIA' }
+                : m
+            );
+          }
+          if (contradictionId === 'conflict-radiology-diagnosis') {
+            updatedSummary.primaryDiagnosis = {
+              term: 'Severe Bilateral Aspiration Pneumonia',
+              snomedCode: '423405001',
+              icd10: 'J69.0',
+              citationId: 'ev-hall-ct-scan',
+            };
+          }
+
+          return {
+            ...c,
+            dataContradictions: updatedContradictions,
+            defaultSummary: updatedSummary,
+          };
+        }
+        return c;
+      })
+    );
+  };
+
+  // Resolve all contradictions with recommended clinical safety guardrails
+  const handleResolveAllContradictions = () => {
+    if (!currentCase.dataContradictions) return;
+    currentCase.dataContradictions.forEach((conflict) => {
+      const rec = conflict.resolutionOptions.find((o) => o.isRecommended) || conflict.resolutionOptions[0];
+      handleResolveContradiction(
+        conflict.id,
+        rec.id,
+        'Auto-resolved via recommended NHS DCB0129 clinical safety guardrail.'
+      );
+    });
+  };
+
   // Citation highlighting and auto-scrolling
   const handleCitationClick = (citationId: string) => {
     setActiveCitationId(citationId);
@@ -101,52 +190,52 @@ export const App: React.FC = () => {
   };
 
   return (
-    <div className="h-screen w-screen bg-[#f4f7fb] flex flex-col font-sans overflow-hidden selection:bg-blue-100 selection:text-blue-900 relative">
-      {/* Ambient Liquid Fluid Glow Layer (Refracts through all frosted glass panels) */}
-      <div className="pointer-events-none fixed inset-0 z-0 overflow-hidden" aria-hidden="true">
-        {/* Azure / Cobalt Liquid Orb */}
-        <div className="absolute top-[-100px] left-[-80px] w-[580px] h-[580px] rounded-full bg-gradient-to-tr from-blue-500/20 via-indigo-400/22 to-cyan-300/18 blur-[100px] animate-liquid-orb-1" />
-        {/* Emerald / Cyan Liquid Orb */}
-        <div className="absolute bottom-[-140px] right-[-100px] w-[680px] h-[680px] rounded-full bg-gradient-to-bl from-teal-400/18 via-sky-400/20 to-blue-600/14 blur-[120px] animate-liquid-orb-2" />
-        {/* Violet / Sky Center Ambient Glow */}
-        <div className="absolute top-1/3 left-1/2 -translate-x-1/2 w-[520px] h-[520px] rounded-full bg-gradient-to-r from-purple-400/12 via-indigo-300/16 to-sky-300/12 blur-[110px] animate-liquid-orb-3" />
-        {/* Microscopic Grid Refraction Mesh */}
-        <div className="absolute inset-0 bg-[radial-gradient(#3b82f6_1px,transparent_1px)] [background-size:28px_28px] opacity-[0.022]" />
-      </div>
-
-      {/* Global Header (Fixed Height, Liquid Glass) */}
+    <div className="h-screen w-screen bg-[#f8f9fa] flex flex-col font-sans overflow-hidden selection:bg-blue-100 selection:text-blue-900">
+      {/* Global Header */}
       <div className="relative z-40 flex-shrink-0">
         <Header
           cases={cases}
           selectedCaseId={selectedCaseId}
+          selectedCareSetting={selectedCareSetting}
           onSelectCase={handleSelectCase}
+          onSelectCareSetting={handleSelectCareSetting}
           onSynthesize={handleSynthesize}
           onReset={handleReset}
           isSynthesizing={isSynthesizing}
         />
       </div>
 
-      {/* Main Dual-Pane Workspace (Full Height, Independent Scrolling, Liquid Glass Panels) */}
-      <main className="relative z-10 flex-1 min-h-0 w-full px-6 lg:px-10 xl:px-12 py-6 overflow-hidden">
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-10 h-full min-h-0">
-          {/* Left Pane: Static Patient Details + Scrollable Ward Notes */}
+      {/* Main Dual-Pane Workspace */}
+      <main className="relative z-10 flex-1 min-h-0 w-full px-4 lg:px-8 xl:px-12 py-5 overflow-hidden">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8 h-full min-h-0">
+          {/* Left Pane: Patient Demographic Card + Scrollable Timeline Feed */}
           <div className="lg:col-span-5 xl:col-span-4 h-full min-h-0 flex flex-col overflow-hidden">
             <TimelineFeed
               patient={currentCase.patient}
               timeline={currentCase.timeline}
               activeCitationId={activeCitationId}
               onAddNote={handleAddNote}
+              onInspectConflict={() => setIsContradictionModalOpen(true)}
             />
           </div>
 
-          {/* Right Pane: Static Controls & Tabs + Scrollable Tab Content */}
+          {/* Right Pane: 5-Tab Clinical Intelligence Cockpit */}
           <div className="lg:col-span-7 xl:col-span-8 h-full min-h-0 flex flex-col overflow-hidden">
             <SynthesizerCockpit
               summary={currentCase.defaultSummary}
+              briefing={currentCase.preConsultBriefing}
+              recordSummary={currentCase.recordSummary}
+              careSetting={currentCase.careSetting}
+              contradictions={currentCase.dataContradictions}
               onUpdateSummary={handleUpdateSummary}
+              onResolveContradiction={handleResolveContradiction}
+              onResolveAllContradictions={handleResolveAllContradictions}
               isSynthesizing={isSynthesizing}
               synthesisStep={synthesisStep}
               onCitationClick={handleCitationClick}
+              onJumpToTimelineEvent={handleCitationClick}
+              isContradictionModalOpen={isContradictionModalOpen}
+              onToggleContradictionModal={setIsContradictionModalOpen}
             />
           </div>
         </div>

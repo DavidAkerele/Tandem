@@ -41,38 +41,62 @@ export const PatientLeafletTab: React.FC<PatientLeafletTabProps> = ({
         </p>
       </div>
 
-      {/* Summary Narrative Grid (Roomy 2 Columns) */}
+      {/* Summary Bullet Points Grid (Roomy 2 Columns) */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-5 text-sm">
-        <div className="bg-white rounded-2xl border border-slate-200/80 p-6 shadow-2xs">
-          <h3 className="font-semibold text-slate-900 text-sm mb-2 flex items-center space-x-2">
-            <span className="w-2.5 h-2.5 rounded-full bg-blue-600"></span>
-            <span>Why you were in hospital</span>
+        <div className="bg-white rounded-2xl border border-slate-200/80 p-6 shadow-2xs space-y-3">
+          <h3 className="font-semibold text-slate-900 text-sm flex items-center space-x-2">
+            <span className="w-2 h-2 rounded-xs bg-blue-600"></span>
+            <span>Why you were in hospital / Reason for care</span>
           </h3>
-          <p className="text-slate-600 leading-relaxed text-sm">
-            {leaflet.reasonForAdmission}
-          </p>
+          <div className="space-y-2">
+            {(leaflet.reasonBulletPoints && leaflet.reasonBulletPoints.length > 0
+              ? leaflet.reasonBulletPoints
+              : leaflet.reasonForAdmission.split(/(?<=[.!?])\s+/).filter(Boolean)
+            ).map((point, idx) => (
+              <div key={idx} className="flex items-start space-x-2 text-xs sm:text-sm text-slate-700">
+                <span className="w-1.5 h-1.5 rounded-xs bg-blue-600 mt-1.5 flex-shrink-0" />
+                <span className="leading-relaxed font-medium">{point}</span>
+              </div>
+            ))}
+          </div>
         </div>
 
-        <div className="bg-white rounded-2xl border border-slate-200/80 p-6 shadow-2xs">
-          <h3 className="font-semibold text-slate-900 text-sm mb-2 flex items-center space-x-2">
-            <span className="w-2.5 h-2.5 rounded-full bg-emerald-600"></span>
+        <div className="bg-white rounded-2xl border border-slate-200/80 p-6 shadow-2xs space-y-3">
+          <h3 className="font-semibold text-slate-900 text-sm flex items-center space-x-2">
+            <span className="w-2 h-2 rounded-xs bg-emerald-600"></span>
             <span>What we did for you</span>
           </h3>
-          <p className="text-slate-600 leading-relaxed text-sm">
-            {leaflet.whatWeDid}
-          </p>
+          <div className="space-y-2">
+            {(leaflet.actionsTakenBulletPoints && leaflet.actionsTakenBulletPoints.length > 0
+              ? leaflet.actionsTakenBulletPoints
+              : leaflet.whatWeDid.split(/(?<=[.!?])\s+/).filter(Boolean)
+            ).map((point, idx) => (
+              <div key={idx} className="flex items-start space-x-2 text-xs sm:text-sm text-slate-700">
+                <span className="w-1.5 h-1.5 rounded-xs bg-emerald-600 mt-1.5 flex-shrink-0" />
+                <span className="leading-relaxed font-medium">{point}</span>
+              </div>
+            ))}
+          </div>
         </div>
       </div>
 
       {/* Current Condition Card */}
-      <div className="bg-white rounded-2xl border border-slate-200/80 p-6 shadow-2xs">
-        <h3 className="font-semibold text-slate-900 text-sm mb-2 flex items-center space-x-2">
+      <div className="bg-white rounded-2xl border border-slate-200/80 p-6 shadow-2xs space-y-3">
+        <h3 className="font-semibold text-slate-900 text-sm flex items-center space-x-2">
           <FileCheck className="w-4 h-4 text-blue-600" />
           <span>How you are doing today</span>
         </h3>
-        <p className="text-slate-600 leading-relaxed text-sm">
-          {leaflet.currentCondition}
-        </p>
+        <div className="space-y-2">
+          {(leaflet.conditionBulletPoints && leaflet.conditionBulletPoints.length > 0
+            ? leaflet.conditionBulletPoints
+            : leaflet.currentCondition.split(/(?<=[.!?])\s+/).filter(Boolean)
+          ).map((point, idx) => (
+            <div key={idx} className="flex items-start space-x-2 text-xs sm:text-sm text-slate-700">
+              <span className="w-1.5 h-1.5 rounded-xs bg-blue-600 mt-1.5 flex-shrink-0" />
+              <span className="leading-relaxed font-medium">{point}</span>
+            </div>
+          ))}
+        </div>
       </div>
 
       {/* Daily Medicine Schedule Table (Full Width with Generous Gutter) */}
