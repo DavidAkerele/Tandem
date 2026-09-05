@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Heart, Activity, Wind, Gauge, ShieldCheck, TrendingDown, TrendingUp, Minus
 } from 'lucide-react';
@@ -20,10 +20,9 @@ interface VitalMetric {
   color: string;
 }
 
-export const PatientVitalsTelemetry: React.FC<PatientVitalsTelemetryProps> = ({ patient }) => {
-  // Deterministic vitals data derived from the active patient case
-  const getVitalsForPatient = (): VitalMetric[] => {
-    switch (patient.id) {
+// Deterministic vitals data derived from the active patient case
+const getVitalsForPatient = (patientId: string): VitalMetric[] => {
+  switch (patientId) {
       case 'pt-gp-001': // David Jenkins - T2D / Neuropathy
         return [
           {
@@ -264,65 +263,129 @@ export const PatientVitalsTelemetry: React.FC<PatientVitalsTelemetryProps> = ({ 
           },
         ];
     }
-  };
+};
 
-  const vitals = getVitalsForPatient();
+// Helper to construct an SVG path from array of numbers
+const renderSparkline = (points: number[], color: string) => {
+  const min = Math.min(...points);
+  const max = Math.max(...points);
+  const range = max - min === 0 ? 1 : max - min;
+  const width = 64;
+  const height = 24;
 
-  // Helper to construct an SVG path from array of numbers
-  const renderSparkline = (points: number[], color: string) => {
-    const min = Math.min(...points);
-    const max = Math.max(...points);
-    const range = max - min === 0 ? 1 : max - min;
-    const width = 64;
-    const height = 24;
+  const coordinates = points.map((p, idx) => {
+    const x = (idx / (points.length - 1)) * width;
+    const y = height - ((p - min) / range) * (height - 6) - 3;
+    return `${x.toFixed(1)},${y.toFixed(1)}`;
+  });
 
-    const coordinates = points.map((p, idx) => {
-      const x = (idx / (points.length - 1)) * width;
-      const y = height - ((p - min) / range) * (height - 6) - 3;
-      return `${x.toFixed(1)},${y.toFixed(1)}`;
-    });
+  const pathD = `M ${coordinates.join(' L ')}`;
 
-    const pathD = `M ${coordinates.join(' L ')}`;
-
-    return (
-      <svg
-        className="w-16 h-6 overflow-visible flex-shrink-0"
-        viewBox={`0 0 ${width} ${height}`}
-        aria-hidden="true"
-      >
-        <path
-          d={pathD}
-          fill="none"
-          stroke={color}
-          strokeWidth="2"
-          strokeLinecap="round"
-          strokeLinejoin="round"
+  return (
+    <svg
+      className="w-16 h-6 overflow-visible flex-shrink-0"
+      viewBox={`0 0 ${width} ${height}`}
+      aria-hidden="true"
+    >
+      <path
+        d={pathD}
+        fill="none"
+        stroke={color}
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+      {/* End dot marker */}
+      {coordinates.length > 0 && (
+        <circle
+          cx={coordinates[coordinates.length - 1].split(',')[0]}
+          cy={coordinates[coordinates.length - 1].split(',')[1]}
+          r="2.5"
+          fill={color}
         />
-        {/* End dot marker */}
-        {coordinates.length > 0 && (
-          <circle
-            cx={coordinates[coordinates.length - 1].split(',')[0]}
-            cy={coordinates[coordinates.length - 1].split(',')[1]}
-            r="2.5"
-            fill={color}
-          />
-        )}
-      </svg>
-    );
-  };
+      )}
+    </svg>
+  );
+};
 
-  const getMetricIcon = (id: string) => {
-    switch (id) {
-      case 'hr':
-        return <Heart className="w-3.5 h-3.5 text-[#d93025]" />;
-      case 'bp':
-        return <Activity className="w-3.5 h-3.5 text-[#1a73e8]" />;
-      case 'spo2':
-        return <Wind className="w-3.5 h-3.5 text-[#188038]" />;
-      default:
-        return <Gauge className="w-3.5 h-3.5 text-[#ea8600]" />;
-    }
-  };
+const getMetricIcon = (id: string) => {
+  switch (id) {
+    case 'hr':
+      return <Heart className="w-3.5 h-3.5 text-[#d93025]" />;
+    case 'bp':
+      return <Activity className="w-3.5 h-3.5 text-[#1a73e8]" />;
+    case 'spo2':
+      return <Wind className="w-3.5 h-3.5 text-[#188038]" />;
+    default:
+      return <Gauge className="w-3.5 h-3.5 text-[#ea8600]" />;
+  }
+};
+
+export const PatientVitalsTelemetry: React.FC<PatientVitalsTelemetryProps> = ({ patient }) => {
+  const [vitals, setVitals] = useState<VitalMetric[]>(() => getVitalsForPatient(patient.id));
+
+  // Re-seed vitals whenever active patient changes
+  useEffect(() => {
+    setVitals(getVitalsForPatient(patient.id));
+  }, [patient.id]);
+
+  // Telemedicine visual feed: Real-time physiological telemetry drift
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setVitals((prevVitals) =>
+        prevVitals.map((metric) => {
+          if (metric.id === 'hr') {
+            const currentHR = parseInt(metric.value, 10);
+            if (isNaN(currentHR)) return metric;
+            const delta = Math.random() > 0.5 ? 1 : -1;
+            const baseHR = parseInt(getVitalsForPatient(patient.id).find((m) => m.id === 'hr')?.value || '72', 10);
+            let nextHR = currentHR + delta;
+            if (nextHR > baseHR + 3) nextHR = baseHR + 2;
+            if (nextHR < baseHR - 3) nextHR = baseHR - 2;
+            const nextSparkline = [...metric.sparkline.slice(1), nextHR];
+            return {
+              ...metric,
+              value: String(nextHR),
+              sparkline: nextSparkline,
+            };
+          }
+
+          if (metric.id === 'bp') {
+            const parts = metric.value.split('/');
+            if (parts.length === 2) {
+              const systolic = parseInt(parts[0], 10);
+              const diastolic = parseInt(parts[1], 10);
+              const deltaSys = Math.random() > 0.5 ? 1 : -1;
+              const nextSys = systolic + deltaSys;
+              const nextSparkline = [...metric.sparkline.slice(1), nextSys];
+              return {
+                ...metric,
+                value: `${nextSys}/${diastolic}`,
+                sparkline: nextSparkline,
+              };
+            }
+          }
+
+          if (metric.id === 'spo2') {
+            const currentSpO2 = parseInt(metric.value.replace('%', ''), 10);
+            if (!isNaN(currentSpO2) && Math.random() > 0.6) {
+              const delta = Math.random() > 0.5 ? 1 : -1;
+              const nextSpO2 = Math.min(100, Math.max(95, currentSpO2 + delta));
+              return {
+                ...metric,
+                value: `${nextSpO2}%`,
+                sparkline: [...metric.sparkline.slice(1), nextSpO2],
+              };
+            }
+          }
+
+          return metric;
+        })
+      );
+    }, 2800);
+
+    return () => clearInterval(interval);
+  }, [patient.id]);
 
   return (
     <div className="flex-shrink-0 bg-white rounded-xl p-3 border border-[#dadce0] shadow-xs space-y-2.5">
@@ -333,9 +396,12 @@ export const PatientVitalsTelemetry: React.FC<PatientVitalsTelemetryProps> = ({ 
             Telemetry &amp; Vitals Feed
           </h3>
         </div>
-        <div className="flex items-center space-x-1.5 text-[10px] text-[#5f6368]">
-          <ShieldCheck className="w-3 h-3 text-[#188038]" />
-          <span>Continuous Telemetry Live</span>
+        <div className="flex items-center space-x-1.5 text-[10px] text-[#188038] font-medium">
+          <span className="flex h-2 w-2 relative">
+            <span className="animate-ping absolute inline-flex h-full w-full rounded-sm bg-emerald-400 opacity-75"></span>
+            <span className="relative inline-flex rounded-sm h-2 w-2 bg-emerald-500"></span>
+          </span>
+          <span className="font-mono text-[10px]">LIVE (2.8s)</span>
         </div>
       </div>
 

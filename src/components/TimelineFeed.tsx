@@ -139,7 +139,9 @@ export const TimelineFeed: React.FC<TimelineFeedProps> = ({
             <span className="text-[#5f6368] block text-[11px]">
               {isPrimaryCare ? 'Lead Clinician' : 'Consultant'}:
             </span>
-            <span className="font-medium text-[#202124] truncate block">{patient.consultant}</span>
+            <span className="font-medium text-[#202124] block break-words" title={patient.consultant}>
+              {patient.consultant}
+            </span>
           </div>
         </div>
 

@@ -1,7 +1,7 @@
 import React from 'react';
 import {
   Sparkles, RotateCcw, Activity, Building2, UserCheck, Search,
-  ChevronDown, Presentation, Stethoscope, Hospital
+  ChevronDown, Stethoscope, Hospital
 } from 'lucide-react';
 import { ClinicalCase, CareSetting } from '../types/clinical';
 
@@ -42,11 +42,8 @@ export const Header: React.FC<HeaderProps> = ({
           <img
             src={`${(import.meta.env.BASE_URL || '/').replace(/\/$/, '')}/clinbrief_logo_blue.png`}
             alt="ClinBrief Logo"
-            className="h-8 md:h-9 w-auto object-contain cursor-pointer"
+            className="h-10 sm:h-11 md:h-12 w-auto object-contain cursor-pointer"
           />
-          <span className="text-[11px] font-medium px-2 py-0.5 rounded-md bg-[#e8f0fe] text-[#1a73e8] border border-[#d2e3fc] hidden sm:inline-block">
-            Clinical Dashboard
-          </span>
         </div>
 
         {/* Center: Care Setting Switcher & Case Selector */}
@@ -142,22 +139,10 @@ export const Header: React.FC<HeaderProps> = ({
           </div>
 
           {/* Clinician Tag */}
-          <div className="hidden lg:inline-flex items-center space-x-1.5 px-2.5 py-1 rounded-lg bg-[#f1f3f4] border border-[#dadce0] text-xs font-medium text-[#3c4043]">
-            <UserCheck className="w-3.5 h-3.5 text-[#5f6368]" />
-            <span className="truncate max-w-[140px]">{currentCase.patient.consultant}</span>
+          <div className="hidden lg:inline-flex items-center space-x-1.5 px-2.5 py-1 rounded-lg bg-[#f1f3f4] border border-[#dadce0] text-xs font-medium text-[#202124]">
+            <UserCheck className="w-3.5 h-3.5 text-[#5f6368] flex-shrink-0" />
+            <span className="whitespace-nowrap font-medium">{currentCase.patient.consultant}</span>
           </div>
-
-          {/* Executive Pitch Deck */}
-          <a
-            href={`${(import.meta.env.BASE_URL || '/').replace(/\/$/, '')}/presentation.html`}
-            target="_blank"
-            rel="noopener noreferrer"
-            title="Launch Executive Pitch Deck"
-            className="inline-flex items-center space-x-1.5 px-3 py-1.5 rounded-lg text-xs font-medium text-[#3c4043] hover:text-[#202124] hover:bg-[#f1f3f4] border border-[#dadce0] transition-colors"
-          >
-            <Presentation className="w-3.5 h-3.5 text-[#5f6368]" />
-            <span className="hidden sm:inline">Pitch Deck</span>
-          </a>
 
           {/* Reset Button */}
           <button
