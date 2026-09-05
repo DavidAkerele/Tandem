@@ -36,13 +36,13 @@ export const Header: React.FC<HeaderProps> = ({
 
   return (
     <header className="sticky top-0 z-40 bg-white border-b border-[#dadce0] flex-shrink-0">
-      <div className="w-full px-4 lg:px-8 xl:px-12 h-16 flex items-center justify-between gap-3">
+      <div className="w-full px-4 lg:px-8 xl:px-12 h-[72px] flex items-center justify-between gap-3">
         {/* Left: ClinBrief Brand Logo */}
         <div className="flex items-center space-x-3 flex-shrink-0">
           <img
             src={`${(import.meta.env.BASE_URL || '/').replace(/\/$/, '')}/clinbrief_logo_blue.png`}
             alt="ClinBrief Logo"
-            className="h-10 sm:h-11 md:h-12 w-auto object-contain cursor-pointer"
+            className="h-12 sm:h-14 md:h-[58px] w-auto max-w-[280px] object-contain cursor-pointer transition-transform hover:scale-[1.02]"
           />
         </div>
 

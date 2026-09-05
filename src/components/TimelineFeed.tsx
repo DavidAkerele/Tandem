@@ -103,9 +103,9 @@ export const TimelineFeed: React.FC<TimelineFeedProps> = ({
   };
 
   return (
-    <div className="h-full min-h-0 flex flex-col space-y-3">
+    <div className="h-full min-h-0 flex flex-col space-y-2.5">
       {/* Patient Demographic Card - Clean Google Style */}
-      <div className="flex-shrink-0 bg-white rounded-xl p-4 border border-[#dadce0] shadow-xs">
+      <div className="flex-shrink-0 bg-white rounded-xl p-3.5 border border-[#dadce0] shadow-xs">
         <div className="flex items-start justify-between gap-3">
           <div>
             <div className="flex items-center space-x-2">
@@ -126,7 +126,7 @@ export const TimelineFeed: React.FC<TimelineFeedProps> = ({
           </div>
         </div>
 
-        <div className="grid grid-cols-2 gap-2 mt-3 pt-2.5 border-t border-[#f1f3f4] text-xs">
+        <div className="grid grid-cols-2 gap-2 mt-2 pt-2 border-t border-[#f1f3f4] text-xs">
           <div>
             <span className="text-[#5f6368] block text-[11px]">
               {isPrimaryCare ? 'Practice' : 'Location'}:
@@ -145,9 +145,9 @@ export const TimelineFeed: React.FC<TimelineFeedProps> = ({
           </div>
         </div>
 
-        {/* Allergy Alert Banner - COLOR strictly where attention MUST be drawn */}
+        {/* Allergy Alert Banner */}
         {patient.allergies.length > 0 && (
-          <div className="mt-2.5 p-2 rounded-lg bg-red-50 border-l-4 border-l-red-600 text-xs flex items-center space-x-2">
+          <div className="mt-2 p-1.5 rounded-lg bg-red-50 border-l-4 border-l-red-600 text-xs flex items-center space-x-2">
             <AlertTriangle className="w-3.5 h-3.5 text-red-600 flex-shrink-0" />
             <div>
               <span className="font-semibold text-red-900">ALLERGY ALERT:</span>{' '}
@@ -157,13 +157,13 @@ export const TimelineFeed: React.FC<TimelineFeedProps> = ({
         )}
       </div>
 
-      {/* Patient Vitals & Physiological Telemetry Strip */}
+      {/* Patient Vitals & Physiological Telemetry Strip (Collapsible) */}
       <PatientVitalsTelemetry patient={patient} />
 
       {/* Search & Category Filter Chips */}
-      <div className="flex-shrink-0 space-y-2">
+      <div className="flex-shrink-0 space-y-1.5">
         {/* Instant Search Bar */}
-        <div className="relative flex items-center bg-[#f1f3f4] rounded-lg px-3.5 py-1.5 border border-transparent focus-within:border-[#1a73e8] focus-within:bg-white transition-all">
+        <div className="relative flex items-center bg-[#f1f3f4] rounded-lg px-3 py-1 border border-transparent focus-within:border-[#1a73e8] focus-within:bg-white transition-all">
           <Search className="w-3.5 h-3.5 text-[#5f6368] mr-2 flex-shrink-0" />
           <input
             type="text"
@@ -187,8 +187,8 @@ export const TimelineFeed: React.FC<TimelineFeedProps> = ({
           )}
         </div>
 
-        {/* Minimal Google Filter Chips */}
-        <div className="flex items-center gap-1.5 overflow-x-auto pb-1 text-xs">
+        {/* Squircle Google Filter Chips */}
+        <div className="flex items-center gap-1.5 overflow-x-auto pb-0.5 text-xs">
           {(
             [
               { id: 'all', label: 'All', count: categoryCounts.all },
@@ -206,7 +206,7 @@ export const TimelineFeed: React.FC<TimelineFeedProps> = ({
               <button
                 key={chip.id}
                 onClick={() => setSelectedCategory(chip.id as CategoryFilter)}
-                className={`px-3 py-1 rounded-full whitespace-nowrap transition-colors flex items-center gap-1.5 ${
+                className={`px-2.5 py-0.5 text-[11px] rounded-md whitespace-nowrap transition-colors flex items-center gap-1.5 ${
                   isSelected
                     ? 'bg-[#202124] text-white font-medium shadow-xs'
                     : 'bg-white text-[#5f6368] hover:bg-[#f1f3f4] border border-[#dadce0]'
@@ -227,7 +227,7 @@ export const TimelineFeed: React.FC<TimelineFeedProps> = ({
         onDragOver={handleTimelineDragOver}
         onDragLeave={handleTimelineDragLeave}
         onDrop={handleTimelineDrop}
-        className="flex-1 min-h-0 overflow-y-auto pr-1 pb-12 space-y-3 relative"
+        className="flex-1 min-h-0 overflow-y-auto pr-1 pb-3 space-y-3 relative"
       >
         {isDraggingOverTimeline && (
           <div className="sticky top-0 z-30 p-5 rounded-xl bg-blue-50 border-2 border-dashed border-[#1a73e8] flex flex-col items-center justify-center text-center mb-3">

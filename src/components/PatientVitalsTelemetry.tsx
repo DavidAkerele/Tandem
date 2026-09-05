@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import {
-  Heart, Activity, Wind, Gauge, ShieldCheck, TrendingDown, TrendingUp, Minus
+  Heart, Activity, Wind, Gauge, ShieldCheck, TrendingDown, TrendingUp, Minus, ChevronDown
 } from 'lucide-react';
 import { PatientDemographics } from '../types/clinical';
 
@@ -323,6 +323,7 @@ const getMetricIcon = (id: string) => {
 
 export const PatientVitalsTelemetry: React.FC<PatientVitalsTelemetryProps> = ({ patient }) => {
   const [vitals, setVitals] = useState<VitalMetric[]>(() => getVitalsForPatient(patient.id));
+  const [isCollapsed, setIsCollapsed] = useState(false);
 
   // Re-seed vitals whenever active patient changes
   useEffect(() => {
@@ -388,69 +389,98 @@ export const PatientVitalsTelemetry: React.FC<PatientVitalsTelemetryProps> = ({ 
   }, [patient.id]);
 
   return (
-    <div className="flex-shrink-0 bg-white rounded-xl p-3 border border-[#dadce0] shadow-xs space-y-2.5">
-      <div className="flex items-center justify-between">
+    <div className="flex-shrink-0 bg-white rounded-xl p-3 border border-[#dadce0] shadow-xs transition-all">
+      {/* Clickable Header Bar */}
+      <div
+        onClick={() => setIsCollapsed(!isCollapsed)}
+        className="flex items-center justify-between cursor-pointer select-none"
+        title={isCollapsed ? 'Click to expand telemetry cards' : 'Click to collapse telemetry cards'}
+      >
         <div className="flex items-center space-x-2">
           <Activity className="w-3.5 h-3.5 text-[#1a73e8]" />
           <h3 className="text-xs font-semibold text-[#202124] uppercase tracking-wider">
             Telemetry &amp; Vitals Feed
           </h3>
         </div>
-        <div className="flex items-center space-x-1.5 text-[10px] text-[#188038] font-medium">
-          <span className="flex h-2 w-2 relative">
-            <span className="animate-ping absolute inline-flex h-full w-full rounded-sm bg-emerald-400 opacity-75"></span>
-            <span className="relative inline-flex rounded-sm h-2 w-2 bg-emerald-500"></span>
-          </span>
-          <span className="font-mono text-[10px]">LIVE (2.8s)</span>
+
+        <div className="flex items-center space-x-2">
+          {/* If collapsed, show compact live summary inline */}
+          {isCollapsed && (
+            <div className="flex items-center space-x-1.5 text-[10px] font-mono text-[#3c4043] bg-[#f8f9fa] px-2 py-0.5 rounded-md border border-[#dadce0]">
+              <span className="font-semibold text-[#d93025]">HR {vitals.find((v) => v.id === 'hr')?.value}</span>
+              <span className="text-[#dadce0]">|</span>
+              <span className="font-semibold text-[#1a73e8]">BP {vitals.find((v) => v.id === 'bp')?.value}</span>
+              <span className="text-[#dadce0]">|</span>
+              <span className="font-semibold text-[#188038]">{vitals.find((v) => v.id === 'spo2')?.value}</span>
+            </div>
+          )}
+
+          <div className="flex items-center space-x-1 text-[10px] text-[#188038] font-medium">
+            <span className="flex h-2 w-2 relative">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-sm bg-emerald-400 opacity-75"></span>
+              <span className="relative inline-flex rounded-sm h-2 w-2 bg-emerald-500"></span>
+            </span>
+            <span className="font-mono text-[10px]">LIVE</span>
+          </div>
+
+          <div className="p-0.5 text-[#5f6368] hover:text-[#202124] transition-colors">
+            <ChevronDown
+              className={`w-3.5 h-3.5 transform transition-transform duration-200 ${
+                isCollapsed ? '-rotate-90' : 'rotate-0'
+              }`}
+            />
+          </div>
         </div>
       </div>
 
-      {/* 4-Card Responsive Grid */}
-      <div className="grid grid-cols-2 gap-2">
-        {vitals.map((metric) => (
-          <div
-            key={metric.id}
-            className="p-2.5 rounded-lg border border-[#dadce0] bg-[#f8f9fa] hover:bg-white hover:border-[#bdc1c6] transition-all flex flex-col justify-between"
-          >
-            <div className="flex items-center justify-between">
-              <div className="flex items-center space-x-1.5">
-                {getMetricIcon(metric.id)}
-                <span className="text-[10px] font-medium text-[#5f6368]">{metric.label}</span>
+      {/* 4-Card Responsive Grid - Hidden when collapsed */}
+      {!isCollapsed && (
+        <div className="grid grid-cols-2 gap-2 mt-2.5 pt-2 border-t border-[#f1f3f4]">
+          {vitals.map((metric) => (
+            <div
+              key={metric.id}
+              className="p-2.5 rounded-lg border border-[#dadce0] bg-[#f8f9fa] hover:bg-white hover:border-[#bdc1c6] transition-all flex flex-col justify-between"
+            >
+              <div className="flex items-center justify-between">
+                <div className="flex items-center space-x-1.5">
+                  {getMetricIcon(metric.id)}
+                  <span className="text-[10px] font-medium text-[#5f6368]">{metric.label}</span>
+                </div>
+                {metric.trend === 'improving' ? (
+                  <span className="text-[9px] text-[#188038] font-medium flex items-center">
+                    <TrendingUp className="w-2.5 h-2.5 mr-0.5" />
+                    Optimal
+                  </span>
+                ) : metric.trend === 'deteriorating' ? (
+                  <span className="text-[9px] text-[#d93025] font-medium flex items-center">
+                    <TrendingDown className="w-2.5 h-2.5 mr-0.5" />
+                    Alert
+                  </span>
+                ) : (
+                  <span className="text-[9px] text-[#5f6368] font-medium flex items-center">
+                    <Minus className="w-2.5 h-2.5 mr-0.5" />
+                    Stable
+                  </span>
+                )}
               </div>
-              {metric.trend === 'improving' ? (
-                <span className="text-[9px] text-[#188038] font-medium flex items-center">
-                  <TrendingUp className="w-2.5 h-2.5 mr-0.5" />
-                  Optimal
-                </span>
-              ) : metric.trend === 'deteriorating' ? (
-                <span className="text-[9px] text-[#d93025] font-medium flex items-center">
-                  <TrendingDown className="w-2.5 h-2.5 mr-0.5" />
-                  Alert
-                </span>
-              ) : (
-                <span className="text-[9px] text-[#5f6368] font-medium flex items-center">
-                  <Minus className="w-2.5 h-2.5 mr-0.5" />
-                  Stable
-                </span>
-              )}
-            </div>
 
-            <div className="flex items-baseline justify-between mt-1">
-              <div>
-                <span className="text-sm font-bold text-[#202124] tracking-tight">
-                  {metric.value}
-                </span>{' '}
-                <span className="text-[10px] text-[#5f6368]">{metric.unit}</span>
+              <div className="flex items-baseline justify-between mt-1">
+                <div>
+                  <span className="text-sm font-bold text-[#202124] tracking-tight">
+                    {metric.value}
+                  </span>{' '}
+                  <span className="text-[10px] text-[#5f6368]">{metric.unit}</span>
+                </div>
+                {renderSparkline(metric.sparkline, metric.color)}
               </div>
-              {renderSparkline(metric.sparkline, metric.color)}
-            </div>
 
-            <p className="text-[10px] text-[#5f6368] truncate mt-1 border-t border-[#dadce0]/60 pt-1">
-              {metric.subtext}
-            </p>
-          </div>
-        ))}
-      </div>
+              <p className="text-[10px] text-[#5f6368] truncate mt-1 border-t border-[#dadce0]/60 pt-1">
+                {metric.subtext}
+              </p>
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 };
