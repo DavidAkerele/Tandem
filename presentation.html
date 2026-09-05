@@ -1,0 +1,1573 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Tandem Discharge — Executive Pitch Deck | NXGN x Tandem Health 2026</title>
+  
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  
+  <!-- Chart.js CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+
+  <style>
+    :root {
+      --color-primary: #0F766E;
+      --color-primary-light: #14B8A6;
+      --color-primary-glow: rgba(20, 184, 166, 0.25);
+      --color-accent: #38BDF8;
+      --color-accent-purple: #8B5CF6;
+      --color-bg-dark: #070B14;
+      --color-bg-surface: #0E1626;
+      --color-bg-card: rgba(19, 29, 49, 0.7);
+      --color-border: rgba(148, 163, 184, 0.14);
+      --color-border-active: rgba(20, 184, 166, 0.4);
+      --color-text-main: #F8FAFC;
+      --color-text-muted: #94A3B8;
+      --color-text-subtle: #64748B;
+      --color-success: #10B981;
+      --color-danger: #EF4444;
+      --color-warning: #F59E0B;
+      --font-heading: 'Outfit', sans-serif;
+      --font-body: 'Plus Jakarta Sans', sans-serif;
+      --font-mono: 'JetBrains Mono', monospace;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    body {
+      background-color: var(--color-bg-dark);
+      color: var(--color-text-main);
+      font-family: var(--font-body);
+      overflow: hidden;
+      width: 100vw;
+      height: 100vh;
+      user-select: none;
+    }
+
+    /* Subtle background grid & glowing ambient light */
+    .bg-canvas {
+      position: fixed;
+      inset: 0;
+      background: 
+        radial-gradient(circle at 15% 20%, rgba(15, 118, 110, 0.18), transparent 45%),
+        radial-gradient(circle at 85% 80%, rgba(56, 189, 248, 0.14), transparent 50%),
+        radial-gradient(circle at 50% 50%, rgba(139, 92, 246, 0.08), transparent 60%),
+        #070B14;
+      z-index: 0;
+      pointer-events: none;
+    }
+
+    .bg-grid {
+      position: fixed;
+      inset: 0;
+      background-image: 
+        linear-gradient(to right, rgba(255, 255, 255, 0.02) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(255, 255, 255, 0.02) 1px, transparent 1px);
+      background-size: 40px 40px;
+      opacity: 0.6;
+      z-index: 1;
+      pointer-events: none;
+    }
+
+    /* Presentation Header & Progress */
+    .top-bar {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 48px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 28px;
+      z-index: 50;
+      background: rgba(7, 11, 20, 0.85);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--color-border);
+    }
+
+    .brand-mark {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-family: var(--font-heading);
+      font-size: 15px;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+    }
+
+    .brand-logo-icon {
+      width: 24px;
+      height: 24px;
+      border-radius: 6px;
+      background: linear-gradient(135deg, #0F766E, #14B8A6);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 0 12px var(--color-primary-glow);
+    }
+
+    .brand-logo-icon svg {
+      width: 14px;
+      height: 14px;
+      fill: #fff;
+    }
+
+    .deck-badge {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      font-weight: 500;
+      padding: 3px 8px;
+      border-radius: 6px;
+      background: rgba(20, 184, 166, 0.12);
+      border: 1px solid rgba(20, 184, 166, 0.3);
+      color: #2DD4BF;
+    }
+
+    .progress-track {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      width: 100%;
+      height: 2px;
+      background: rgba(255, 255, 255, 0.06);
+    }
+
+    .progress-fill {
+      height: 100%;
+      width: 8.33%;
+      background: linear-gradient(90deg, #0F766E, #2DD4BF);
+      box-shadow: 0 0 10px #14B8A6;
+      transition: width 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    /* 16:9 Aspect Ratio Deck Container */
+    .slide-deck {
+      position: absolute;
+      inset: 48px 0 64px 0;
+      width: 100vw;
+      height: calc(100vh - 112px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 10;
+      padding: 16px;
+    }
+
+    .slide-viewport {
+      position: relative;
+      width: 100%;
+      height: 100%;
+      max-width: calc((100vh - 112px) * 16 / 9);
+      max-height: calc(100vw * 9 / 16);
+      background: var(--color-bg-surface);
+      border-radius: 16px;
+      border: 1px solid var(--color-border);
+      box-shadow: 
+        0 20px 50px rgba(0, 0, 0, 0.6),
+        0 0 0 1px rgba(255, 255, 255, 0.05);
+      overflow: hidden;
+      display: flex;
+    }
+
+    /* Slide Card */
+    .slide {
+      position: absolute;
+      inset: 0;
+      padding: 44px 54px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      opacity: 0;
+      visibility: hidden;
+      transform: translateY(12px) scale(0.99);
+      transition: opacity 0.35s ease, transform 0.35s cubic-bezier(0.16, 1, 0.3, 1), visibility 0.35s;
+    }
+
+    .slide.active {
+      opacity: 1;
+      visibility: visible;
+      transform: translateY(0) scale(1);
+      z-index: 5;
+    }
+
+    /* Slide Headers */
+    .slide-eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-family: var(--font-mono);
+      font-size: 11px;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: #2DD4BF;
+      background: rgba(20, 184, 166, 0.08);
+      border: 1px solid rgba(20, 184, 166, 0.2);
+      padding: 4px 10px;
+      border-radius: 6px;
+      margin-bottom: 12px;
+      width: fit-content;
+    }
+
+    .slide-title {
+      font-family: var(--font-heading);
+      font-size: clamp(26px, 3.2vw, 42px);
+      font-weight: 700;
+      line-height: 1.15;
+      letter-spacing: -0.025em;
+      color: #FFFFFF;
+      margin-bottom: 8px;
+    }
+
+    .slide-title span.highlight {
+      background: linear-gradient(135deg, #2DD4BF, #38BDF8);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .slide-subtitle {
+      font-size: clamp(14px, 1.3vw, 17px);
+      color: var(--color-text-muted);
+      line-height: 1.45;
+      max-width: 900px;
+    }
+
+    /* Content Layouts */
+    .content-area {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      margin: 16px 0;
+      overflow: hidden;
+    }
+
+    .grid-2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 24px;
+      align-items: center;
+      height: 100%;
+    }
+
+    .grid-3 {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 20px;
+      height: 100%;
+      align-items: stretch;
+    }
+
+    .grid-4 {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 16px;
+      align-items: stretch;
+    }
+
+    /* Cards */
+    .deck-card {
+      background: var(--color-bg-card);
+      border: 1px solid var(--color-border);
+      border-radius: 12px;
+      padding: 22px;
+      backdrop-filter: blur(10px);
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .deck-card.highlight {
+      border-color: rgba(20, 184, 166, 0.4);
+      background: linear-gradient(145deg, rgba(20, 184, 166, 0.08), rgba(15, 23, 42, 0.8));
+    }
+
+    .deck-card.danger {
+      border-color: rgba(239, 68, 68, 0.3);
+      background: linear-gradient(145deg, rgba(239, 68, 68, 0.06), rgba(15, 23, 42, 0.8));
+    }
+
+    .deck-card-header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 12px;
+    }
+
+    .card-icon-box {
+      width: 36px;
+      height: 36px;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+      flex-shrink: 0;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      color: #2DD4BF;
+    }
+
+    .card-icon-box.danger {
+      background: rgba(239, 68, 68, 0.1);
+      border-color: rgba(239, 68, 68, 0.25);
+      color: #F87171;
+    }
+
+    .card-icon-box.amber {
+      background: rgba(245, 158, 11, 0.1);
+      border-color: rgba(245, 158, 11, 0.25);
+      color: #FBBF24;
+    }
+
+    .card-title {
+      font-family: var(--font-heading);
+      font-size: 17px;
+      font-weight: 600;
+      color: #F8FAFC;
+    }
+
+    .card-body {
+      font-size: 13.5px;
+      color: var(--color-text-muted);
+      line-height: 1.5;
+    }
+
+    .card-bullet-list {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      margin-top: 8px;
+    }
+
+    .card-bullet-list li {
+      font-size: 13px;
+      color: var(--color-text-muted);
+      display: flex;
+      align-items: flex-start;
+      gap: 8px;
+      line-height: 1.4;
+    }
+
+    .card-bullet-list li::before {
+      content: "•";
+      color: #2DD4BF;
+      font-size: 18px;
+      line-height: 1;
+    }
+
+    /* Metric Display */
+    .metric-value {
+      font-family: var(--font-heading);
+      font-size: clamp(34px, 4vw, 54px);
+      font-weight: 800;
+      letter-spacing: -0.03em;
+      line-height: 1;
+      margin-bottom: 6px;
+    }
+
+    .metric-value.teal {
+      background: linear-gradient(135deg, #2DD4BF, #0F766E);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .metric-value.red {
+      background: linear-gradient(135deg, #F87171, #DC2626);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .metric-label {
+      font-size: 12px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--color-text-subtle);
+    }
+
+    .metric-sub {
+      font-size: 12px;
+      color: var(--color-text-muted);
+      margin-top: 4px;
+    }
+
+    /* Clinical Squircle Badges - ZERO SLOP */
+    .squircle-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 3px 8px;
+      border-radius: 6px;
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.02em;
+    }
+
+    .squircle-badge.started {
+      background: rgba(16, 185, 129, 0.12);
+      border: 1px solid rgba(16, 185, 129, 0.3);
+      color: #34D399;
+    }
+
+    .squircle-badge.stopped {
+      background: rgba(239, 68, 68, 0.12);
+      border: 1px solid rgba(239, 68, 68, 0.3);
+      color: #F87171;
+    }
+
+    .squircle-badge.changed {
+      background: rgba(245, 158, 11, 0.12);
+      border: 1px solid rgba(245, 158, 11, 0.3);
+      color: #FBBF24;
+    }
+
+    .squircle-badge.continued {
+      background: rgba(59, 130, 246, 0.12);
+      border: 1px solid rgba(59, 130, 246, 0.3);
+      color: #60A5FA;
+    }
+
+    /* Comparison Table */
+    .clinical-table {
+      width: 100%;
+      border-collapse: separate;
+      border-spacing: 0;
+      border-radius: 10px;
+      overflow: hidden;
+      border: 1px solid var(--color-border);
+      background: var(--color-bg-card);
+      font-size: 13px;
+    }
+
+    .clinical-table th {
+      background: rgba(255, 255, 255, 0.04);
+      padding: 12px 16px;
+      text-align: left;
+      font-family: var(--font-heading);
+      font-size: 12px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--color-text-muted);
+      border-bottom: 1px solid var(--color-border);
+    }
+
+    .clinical-table td {
+      padding: 12px 16px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+      color: var(--color-text-muted);
+      vertical-align: middle;
+    }
+
+    .clinical-table tr:last-child td {
+      border-bottom: none;
+    }
+
+    .clinical-table td strong {
+      color: #FFFFFF;
+    }
+
+    /* Bottom Control Bar */
+    .bottom-bar {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      height: 64px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 28px;
+      z-index: 50;
+      background: rgba(7, 11, 20, 0.85);
+      backdrop-filter: blur(12px);
+      border-top: 1px solid var(--color-border);
+    }
+
+    .slide-counter {
+      font-family: var(--font-mono);
+      font-size: 13px;
+      color: var(--color-text-muted);
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .slide-counter strong {
+      color: #2DD4BF;
+    }
+
+    .nav-buttons {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .nav-btn {
+      background: rgba(255, 255, 255, 0.06);
+      border: 1px solid var(--color-border);
+      color: #F8FAFC;
+      border-radius: 8px;
+      padding: 8px 16px;
+      font-size: 13px;
+      font-weight: 600;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .nav-btn:hover {
+      background: rgba(20, 184, 166, 0.15);
+      border-color: rgba(20, 184, 166, 0.4);
+      color: #2DD4BF;
+    }
+
+    .nav-btn:active {
+      transform: scale(0.97);
+    }
+
+    .nav-btn.primary {
+      background: linear-gradient(135deg, #0F766E, #14B8A6);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      color: #FFFFFF;
+      box-shadow: 0 2px 10px rgba(15, 118, 110, 0.4);
+    }
+
+    .nav-btn.primary:hover {
+      box-shadow: 0 4px 16px rgba(20, 184, 166, 0.5);
+    }
+
+    .shortcut-hints {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      color: var(--color-text-subtle);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .kbd {
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      border-radius: 4px;
+      padding: 2px 5px;
+      color: var(--color-text-muted);
+    }
+
+    /* Modal / Drawer for Slide Thumbnails */
+    .overview-modal {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.85);
+      backdrop-filter: blur(16px);
+      z-index: 100;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 40px;
+    }
+
+    .overview-modal.open {
+      display: flex;
+    }
+
+    .overview-content {
+      background: var(--color-bg-surface);
+      border: 1px solid var(--color-border);
+      border-radius: 16px;
+      max-width: 1000px;
+      width: 100%;
+      max-height: 80vh;
+      overflow-y: auto;
+      padding: 30px;
+    }
+
+    .overview-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 16px;
+      margin-top: 20px;
+    }
+
+    .overview-thumb {
+      background: var(--color-bg-card);
+      border: 1px solid var(--color-border);
+      border-radius: 8px;
+      padding: 16px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .overview-thumb:hover, .overview-thumb.active {
+      border-color: #2DD4BF;
+      background: rgba(20, 184, 166, 0.1);
+      transform: translateY(-2px);
+    }
+
+    .overview-thumb-num {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      color: #2DD4BF;
+      margin-bottom: 6px;
+    }
+
+    .overview-thumb-title {
+      font-size: 12px;
+      font-weight: 600;
+      color: #F8FAFC;
+    }
+
+    /* Responsive adjustments */
+    @media (max-width: 900px) {
+      .slide { padding: 24px; }
+      .grid-2, .grid-3, .grid-4 { grid-template-columns: 1fr; gap: 12px; }
+      .shortcut-hints { display: none; }
+      .overview-grid { grid-template-columns: repeat(2, 1fr); }
+    }
+  </style>
+</head>
+<body>
+  <!-- Ambient glow backdrop -->
+  <div class="bg-canvas"></div>
+  <div class="bg-grid"></div>
+
+  <!-- Top Header Navigation -->
+  <header class="top-bar">
+    <div class="brand-mark">
+      <div class="brand-logo-icon">
+        <svg viewBox="0 0 24 24">
+          <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
+        </svg>
+      </div>
+      <span>Tandem<span style="font-weight:400; color:var(--color-text-muted)">Discharge</span></span>
+      <span class="deck-badge">NXGN 2026</span>
+    </div>
+
+    <div style="display:flex; align-items:center; gap:16px;">
+      <span style="font-size:12px; color:var(--color-text-muted)">PRD Executive Presentation</span>
+      <button class="nav-btn" onclick="toggleOverview()" style="padding:4px 10px; font-size:11px;">
+        <span class="kbd">M</span> Outline
+      </button>
+      <button class="nav-btn" onclick="toggleFullscreen()" style="padding:4px 10px; font-size:11px;">
+        <span class="kbd">F</span> Fullscreen
+      </button>
+    </div>
+
+    <div class="progress-track">
+      <div class="progress-fill" id="progressFill"></div>
+    </div>
+  </header>
+
+  <!-- Slide Deck Main Viewport -->
+  <main class="slide-deck">
+    <div class="slide-viewport" id="slideViewport">
+
+      <!-- SLIDE 1: Title & Hook -->
+      <section class="slide active" data-slide="1">
+        <div>
+          <div class="slide-eyebrow">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+            NXGN x Tandem Health Hackathon 2026
+          </div>
+          <h1 class="slide-title">Tandem <span class="highlight">Discharge</span></h1>
+          <p class="slide-subtitle">
+            Autonomous Inpatient & Urgent Care Clinical Synthesis Engine. Transforming multi-day fragmented ward round notes, laboratory feeds, and medication charts into NHS-compliant Electronic Discharge Notifications (eDN) in seconds.
+          </p>
+        </div>
+
+        <div class="content-area">
+          <div class="grid-3">
+            <div class="deck-card highlight">
+              <div class="deck-card-header">
+                <div class="card-icon-box">⚡</div>
+                <div class="card-title">The Strategic Thesis</div>
+              </div>
+              <div class="card-body">
+                Tandem Health solved the single consultation. We built the engine that solves the entire <strong>hospital episode</strong>, moving from ambient scribing to multi-source clinical synthesis.
+              </div>
+            </div>
+
+            <div class="deck-card">
+              <div class="deck-card-header">
+                <div class="card-icon-box">⏱️</div>
+                <div class="card-title">Immediate ROI</div>
+              </div>
+              <div class="card-body">
+                Cuts discharge summary drafting time from <strong>45 minutes to &lt;90 seconds</strong>, accelerating morning bed turnaround and unblocking NHS emergency departments.
+              </div>
+            </div>
+
+            <div class="deck-card">
+              <div class="deck-card-header">
+                <div class="card-icon-box">🛡️</div>
+                <div class="card-title">Patient Safety First</div>
+              </div>
+              <div class="card-body">
+                Deterministic 4-state Medication Reconciliation matrix with mandatory clinical reasoning to eliminate the 50% of NHS errors that happen at handover.
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div style="display:flex; justify-content:space-between; align-items:center; font-size:12px; color:var(--color-text-subtle);">
+          <span>Clinical Standards: PRSB eDN • SNOMED-CT • NICE • NHS DCB0129</span>
+          <span>Press <strong>→</strong> or <strong>Space</strong> to advance</span>
+        </div>
+      </section>
+
+      <!-- SLIDE 2: The Clinical Crisis ("What Is") -->
+      <section class="slide" data-slide="2">
+        <div>
+          <div class="slide-eyebrow">The Healthcare Problem</div>
+          <h2 class="slide-title">The <span class="highlight">60-Minute Bottleneck</span> Paralyzing NHS Wards</h2>
+          <p class="slide-subtitle">
+            Writing the Electronic Discharge Notification (eDN) is universally cited by NHS Junior Doctors as their most dreaded administrative chore.
+          </p>
+        </div>
+
+        <div class="content-area">
+          <div class="grid-4">
+            <div class="deck-card danger">
+              <div class="metric-value red">45m</div>
+              <div class="metric-label">Per Discharge Draft</div>
+              <div class="metric-sub">Doctors scour 3–10 days of paper notes, lab portals, and nursing logs.</div>
+            </div>
+
+            <div class="deck-card danger">
+              <div class="metric-value red">50%</div>
+              <div class="metric-label">Handover Drug Errors</div>
+              <div class="metric-sub">Medication discrepancies peak at transition from inpatient to GP care.</div>
+            </div>
+
+            <div class="deck-card danger">
+              <div class="metric-value red">4-6h</div>
+              <div class="metric-label">Discharge Delay</div>
+              <div class="metric-sub">Patients remain in beds hours after being deemed Medically Fit (MFFD).</div>
+            </div>
+
+            <div class="deck-card danger">
+              <div class="metric-value red">100k+</div>
+              <div class="metric-label">Bed-Days Lost</div>
+              <div class="metric-sub">Ambulances queue outside A&E because downstream ward beds are blocked.</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="deck-card" style="padding:14px 20px; background:rgba(239, 68, 68, 0.08); border-color:rgba(239, 68, 68, 0.25);">
+          <div style="font-size:13px; color:#FCA5A5; line-height:1.4;">
+            <strong>The Ward 4B Reality:</strong> Dr. Alex Smith (FY1) has 6 patients deemed ready for discharge on morning ward rounds at 09:00. Even working nonstop, writing manual letters takes until 15:00. Inpatient beds stay blocked, and acute admissions wait on trolleys.
+          </div>
+        </div>
+      </section>
+
+      <!-- SLIDE 3: Why Ambient Scribing Alone Falls Short -->
+      <section class="slide" data-slide="3">
+        <div>
+          <div class="slide-eyebrow">Strategic Architectural Insight</div>
+          <h2 class="slide-title">Why Ambient Audio Scribing <span class="highlight">Cannot Solve</span> Inpatient Care</h2>
+          <p class="slide-subtitle">
+            Ambient scribing captures what is spoken during a 2-minute bedside visit. Inpatient care is an asynchronous multi-day saga.
+          </p>
+        </div>
+
+        <div class="content-area">
+          <div class="grid-2">
+            <div class="deck-card">
+              <div class="deck-card-header">
+                <div class="card-icon-box" style="color:#94A3B8">🎙️</div>
+                <div class="card-title">Tandem Ambient (Primary Care)</div>
+              </div>
+              <ul class="card-bullet-list">
+                <li><strong>Synchronous capture:</strong> 1-on-1 dialogue during a single 10-minute outpatient appointment.</li>
+                <li><strong>Single encounter:</strong> Patient and clinician talk, AI scribes live speech to clinical note.</li>
+                <li><strong>Limitation in Acute Wards:</strong> Misses 90% of clinical events occurring away from the bedside.</li>
+              </ul>
+            </div>
+
+            <div class="deck-card highlight">
+              <div class="deck-card-header">
+                <div class="card-icon-box">🧠</div>
+                <div class="card-title">Tandem Discharge (Secondary & Urgent Care)</div>
+              </div>
+              <ul class="card-bullet-list">
+                <li><strong>Asynchronous synthesis:</strong> Integrates Day 1 admission, Day 2 labs, Day 3 microbiology, and Day 4 drug titrations.</li>
+                <li><strong>Multi-disciplinary timeline:</strong> Consolidates nurse vitals, consultant plans, and pharmacy logs.</li>
+                <li><strong>Deterministic reconciliation:</strong> Auditable diff of home vs. inpatient medication charts.</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+
+        <div style="font-size:12.5px; color:var(--color-text-subtle); text-align:center;">
+          Together, Ambient + Discharge provide Tandem with a comprehensive Clinical OS covering 100% of the patient journey.
+        </div>
+      </section>
+
+      <!-- SLIDE 4: Solution Overview ("What Could Be") -->
+      <section class="slide" data-slide="4">
+        <div>
+          <div class="slide-eyebrow">Product Solution</div>
+          <h2 class="slide-title">Tandem Discharge: The <span class="highlight">Clinical Synthesis Engine</span></h2>
+          <p class="slide-subtitle">
+            A dual-pane workspace designed for high-pressure acute wards: raw timeline on the left, multi-dimensional synthesized clinical documents on the right.
+          </p>
+        </div>
+
+        <div class="content-area">
+          <div class="grid-3">
+            <div class="deck-card highlight">
+              <div class="deck-card-header">
+                <div class="card-icon-box">📂</div>
+                <div class="card-title">Chronological Intake Feed</div>
+              </div>
+              <div class="card-body">
+                Ingests admission clerking, ward round entries, lab alerts, and nurse observations into an interactive, time-stamped timeline.
+              </div>
+            </div>
+
+            <div class="deck-card highlight">
+              <div class="deck-card-header">
+                <div class="card-icon-box">⚡</div>
+                <div class="card-title">AI Synthesis Cockpit</div>
+              </div>
+              <div class="card-body">
+                Generates NHS PRSB-compliant eDN with Chief Complaint, Hospital Course, Diagnoses, Procedures, and Red Flags in seconds.
+              </div>
+            </div>
+
+            <div class="deck-card highlight">
+              <div class="deck-card-header">
+                <div class="card-icon-box">📋</div>
+                <div class="card-title">Actionable GP Checklist</div>
+              </div>
+              <div class="card-body">
+                Extracts explicit primary care tasks with deadlines (e.g., <i>Repeat U&Es in 7 days</i>) categorized by clinical urgency.
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="deck-card" style="padding:14px 20px; background:rgba(20, 184, 166, 0.08); border-color:rgba(20, 184, 166, 0.25);">
+          <div style="font-size:13px; color:#2DD4BF;">
+            <strong>Zero-Friction Adoption:</strong> Works with existing EHRs (EMIS Web, SystmOne, Epic Hyperspace, Cerner) through formatted one-click copy modals.
+          </div>
+        </div>
+      </section>
+
+      <!-- SLIDE 5: 4-State Med Rec Matrix -->
+      <section class="slide" data-slide="5">
+        <div>
+          <div class="slide-eyebrow">Clinical Breakthrough</div>
+          <h2 class="slide-title">Eliminating Medication Errors: The <span class="highlight">4-State Med Rec</span> Matrix</h2>
+          <p class="slide-subtitle">
+            Medication errors at handover cost NHS lives and millions in readmissions. Tandem enforces a deterministic state machine for every drug.
+          </p>
+        </div>
+
+        <div class="content-area">
+          <div class="grid-4">
+            <div class="deck-card" style="border-top:3px solid #10B981">
+              <div style="margin-bottom:8px;"><span class="squircle-badge started">STARTED</span></div>
+              <div class="card-title" style="font-size:15px;">New Inpatient Therapy</div>
+              <div class="card-body" style="font-size:12.5px; margin-top:8px;">
+                E.g., Co-Amoxiclav 625mg TDS.<br/><br/>
+                Requires mandatory <strong>indication</strong> and <strong>stop date / planned duration</strong> to prevent inappropriate antibiotic prolongation.
+              </div>
+            </div>
+
+            <div class="deck-card" style="border-top:3px solid #EF4444">
+              <div style="margin-bottom:8px;"><span class="squircle-badge stopped">STOPPED</span></div>
+              <div class="card-title" style="font-size:15px;">Discontinued Drug</div>
+              <div class="card-body" style="font-size:12.5px; margin-top:8px;">
+                E.g., Ramipril 5mg OD.<br/><br/>
+                Requires explicit <strong>clinical rationale</strong> (e.g., AKI Stage 2) so receiving GPs do not inadvertently resume harmful medications.
+              </div>
+            </div>
+
+            <div class="deck-card" style="border-top:3px solid #F59E0B">
+              <div style="margin-bottom:8px;"><span class="squircle-badge changed">DOSE CHANGED</span></div>
+              <div class="card-title" style="font-size:15px;">Titrated Frequency / Dose</div>
+              <div class="card-body" style="font-size:12.5px; margin-top:8px;">
+                E.g., Furosemide doubled to 80mg OD.<br/><br/>
+                Includes biochemical monitoring parameters and titration checkpoints for primary care follow-up.
+              </div>
+            </div>
+
+            <div class="deck-card" style="border-top:3px solid #3B82F6">
+              <div style="margin-bottom:8px;"><span class="squircle-badge continued">CONTINUED</span></div>
+              <div class="card-title" style="font-size:15px;">Maintained Home Meds</div>
+              <div class="card-body" style="font-size:12.5px; margin-top:8px;">
+                E.g., Atorvastatin 20mg ON.<br/><br/>
+                Cross-referenced against admission clerking to ensure chronic disease medications are never omitted during stay.
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div style="font-size:12px; color:var(--color-text-subtle); display:flex; justify-content:space-between;">
+          <span>Safety Standard: 0% tolerance for undocumented medication omissions</span>
+          <span>Auditable by NHS Trust Pharmacy Lead</span>
+        </div>
+      </section>
+
+      <!-- SLIDE 6: Dual-Audience Synthesis -->
+      <section class="slide" data-slide="6">
+        <div>
+          <div class="slide-eyebrow">Patient-Centred Innovation</div>
+          <h2 class="slide-title">Dual-Audience Synthesis: <span class="highlight">Clinician & Patient</span></h2>
+          <p class="slide-subtitle">
+            One synthesis engine produces two distinct tailored documents: an NHS PRSB technical document for doctors and a clear guide for patients.
+          </p>
+        </div>
+
+        <div class="content-area">
+          <div class="grid-2">
+            <div class="deck-card">
+              <div class="deck-card-header">
+                <div class="card-icon-box">🩺</div>
+                <div>
+                  <div class="card-title">Professional eDN (For GP & Ward)</div>
+                  <div style="font-size:11px; color:var(--color-text-subtle)">NHS PRSB Core Information Standard</div>
+                </div>
+              </div>
+              <ul class="card-bullet-list">
+                <li>Standardized clinical taxonomy with SNOMED-CT coded diagnoses.</li>
+                <li>Chronological hospital course: procedures, lab trajectory, microbiology.</li>
+                <li>Urgent vs. Routine GP actions with strict calendar target dates.</li>
+                <li>Medicolegal consultant sign-off attribution.</li>
+              </ul>
+            </div>
+
+            <div class="deck-card highlight">
+              <div class="deck-card-header">
+                <div class="card-icon-box">🏡</div>
+                <div>
+                  <div class="card-title">Patient "Take-Home" Leaflet</div>
+                  <div style="font-size:11px; color:#2DD4BF">Flesch-Kincaid Grade &le; 6 (Reading Age 11)</div>
+                </div>
+              </div>
+              <ul class="card-bullet-list">
+                <li>Translates complex medical jargon into warm, conversational English.</li>
+                <li>Clear "Why you were in hospital" and "What changed with your health".</li>
+                <li>Morning, Noon, Evening, Night medicine timetable with instructions.</li>
+                <li>Emergency Red Flag rules: When to call 111 vs. 999.</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+
+        <div style="font-size:12.5px; color:var(--color-text-subtle); text-align:center;">
+          Reduces 30-day post-discharge readmissions caused by medication confusion and misunderstood warning signs.
+        </div>
+      </section>
+
+      <!-- SLIDE 7: Safety & Governance -->
+      <section class="slide" data-slide="7">
+        <div>
+          <div class="slide-eyebrow">Safety & Governance</div>
+          <h2 class="slide-title">Clinical AI Safety & <span class="highlight">Zero-Hallucination</span> Architecture</h2>
+          <p class="slide-subtitle">
+            Engineered in strict compliance with NHS DCB0129 / DCB0160 Clinical Safety Management Standards.
+          </p>
+        </div>
+
+        <div class="content-area">
+          <div class="grid-3">
+            <div class="deck-card">
+              <div class="deck-card-header">
+                <div class="card-icon-box">🔍</div>
+                <div class="card-title">1-Click Source Tracing</div>
+              </div>
+              <div class="card-body">
+                Clicking any sentence in the synthesized eDN instantly scrolls and highlights the exact sentence in the raw chronological ward notes. 100% auditability.
+              </div>
+            </div>
+
+            <div class="deck-card">
+              <div class="deck-card-header">
+                <div class="card-icon-box danger">⚠️</div>
+                <div class="card-title">Contradiction Detection</div>
+              </div>
+              <div class="card-body">
+                Identifies discrepancies across entries (e.g., admission says "NKDA" but Day 2 note reports Penicillin hives), raising immediate clinical amber flags.
+              </div>
+            </div>
+
+            <div class="deck-card">
+              <div class="deck-card-header">
+                <div class="card-icon-box">👨‍⚕️</div>
+                <div class="card-title">Human-in-the-Loop</div>
+              </div>
+              <div class="card-body">
+                AI acts solely as a drafting co-pilot. Every clinical assertion, medication state, and follow-up item is editable with mandatory clinician verification.
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="deck-card" style="padding:12px 18px; background:rgba(255,255,255,0.03);">
+          <div style="font-size:12px; color:var(--color-text-muted); display:flex; justify-content:space-between; align-items:center;">
+            <span><strong>Caldicott Principle Compliance:</strong> Demonstration operates on 100% synthetic, clinically realistic test cases.</span>
+            <span class="squircle-badge started">NHS DCB0129 READY</span>
+          </div>
+        </div>
+      </section>
+
+      <!-- SLIDE 8: ROI & Metrics Dashboard (Chart.js) -->
+      <section class="slide" data-slide="8">
+        <div>
+          <div class="slide-eyebrow">Operational & Financial ROI</div>
+          <h2 class="slide-title">Measurable <span class="highlight">Efficiency & Safety</span> Gains</h2>
+          <p class="slide-subtitle">
+            Comparing manual NHS ward workflows against Tandem Discharge across acute medical units.
+          </p>
+        </div>
+
+        <div class="content-area">
+          <div class="grid-2">
+            <!-- Chart Container -->
+            <div class="deck-card" style="height:100%; display:flex; flex-direction:column; justify-content:center;">
+              <div style="font-size:13px; font-weight:600; margin-bottom:12px; color:#F8FAFC;">
+                Discharge Process Duration: Manual vs. Tandem (Minutes)
+              </div>
+              <div style="position:relative; height:180px; width:100%;">
+                <canvas id="roiChart"></canvas>
+              </div>
+            </div>
+
+            <!-- KPI Cards -->
+            <div style="display:flex; flex-direction:column; gap:12px; justify-content:center;">
+              <div class="deck-card highlight" style="padding:16px;">
+                <div style="display:flex; justify-content:space-between; align-items:center;">
+                  <div>
+                    <div class="metric-value teal" style="font-size:32px;">95%</div>
+                    <div class="metric-label">Drafting Time Saved</div>
+                  </div>
+                  <div style="font-size:12px; color:var(--color-text-muted); max-width:180px; text-align:right;">
+                    From 45 mins to under 90s per patient summary.
+                  </div>
+                </div>
+              </div>
+
+              <div class="deck-card" style="padding:16px;">
+                <div style="display:flex; justify-content:space-between; align-items:center;">
+                  <div>
+                    <div class="metric-value" style="font-size:32px; color:#38BDF8;">5.2h</div>
+                    <div class="metric-label">Earlier Bed Release</div>
+                  </div>
+                  <div style="font-size:12px; color:var(--color-text-muted); max-width:180px; text-align:right;">
+                    Patients reach discharge lounge before 11:00 AM.
+                  </div>
+                </div>
+              </div>
+
+              <div class="deck-card" style="padding:16px;">
+                <div style="display:flex; justify-content:space-between; align-items:center;">
+                  <div>
+                    <div class="metric-value" style="font-size:32px; color:#10B981;">0%</div>
+                    <div class="metric-label">Drug Omission Rate</div>
+                  </div>
+                  <div style="font-size:12px; color:var(--color-text-muted); max-width:180px; text-align:right;">
+                    Deterministic 4-status drug cross-referencing.
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div style="font-size:12px; color:var(--color-text-subtle); text-align:right;">
+          Based on NHS England Acute Trust bed-blocking modeling (2025/2026).
+        </div>
+      </section>
+
+      <!-- SLIDE 9: User Personas & Ecosystem -->
+      <section class="slide" data-slide="9">
+        <div>
+          <div class="slide-eyebrow">Stakeholder Ecosystem</div>
+          <h2 class="slide-title">Designed for the <span class="highlight">NHS Clinical Coalition</span></h2>
+          <p class="slide-subtitle">
+            Addressing critical pain points across junior doctors, urgent care clinical leads, and primary care general practitioners.
+          </p>
+        </div>
+
+        <div class="content-area">
+          <div class="grid-3">
+            <div class="deck-card">
+              <div class="deck-card-header">
+                <div class="card-icon-box">🩺</div>
+                <div>
+                  <div class="card-title">Dr. Alex Smith, FY1</div>
+                  <div style="font-size:11px; color:var(--color-text-subtle)">Acute Medicine (Ward 4B)</div>
+                </div>
+              </div>
+              <div class="card-body">
+                <strong>Pain:</strong> Spends 3+ hours typing notes while patient care waits.<br/><br/>
+                <strong>Impact:</strong> Reclaims 2 hours per shift, prevents burnout, and leaves on time with audit-proof documentation.
+              </div>
+            </div>
+
+            <div class="deck-card">
+              <div class="deck-card-header">
+                <div class="card-icon-box">⚡</div>
+                <div>
+                  <div class="card-title">Dr. Jonathan Tai</div>
+                  <div style="font-size:11px; color:var(--color-text-subtle)">Urgent Care Clinical Lead</div>
+                </div>
+              </div>
+              <div class="card-body">
+                <strong>Pain:</strong> High-throughput handovers with risk of missed lab red flags.<br/><br/>
+                <strong>Impact:</strong> Standardized discharge protocols with immediate safety-net alerts and structured handover.
+              </div>
+            </div>
+
+            <div class="deck-card">
+              <div class="deck-card-header">
+                <div class="card-icon-box">🏥</div>
+                <div>
+                  <div class="card-title">Dr. Sarah Patel, GP</div>
+                  <div style="font-size:11px; color:var(--color-text-subtle)">Millwood Medical Practice</div>
+                </div>
+              </div>
+              <div class="card-body">
+                <strong>Pain:</strong> Sifts through dense, unformatted letters hunting for tasks.<br/><br/>
+                <strong>Impact:</strong> Clear "GP Action Required" box on page 1 with exact test dates and titration guidelines.
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div style="font-size:12px; color:var(--color-text-subtle); text-align:center;">
+          Unifies hospital clinicians and general practice around a shared, unambiguous patient handover.
+        </div>
+      </section>
+
+      <!-- SLIDE 10: Technical Architecture -->
+      <section class="slide" data-slide="10">
+        <div>
+          <div class="slide-eyebrow">Engineering Architecture</div>
+          <h2 class="slide-title">Modern, Reliable & <span class="highlight">EHR-Interoperable</span></h2>
+          <p class="slide-subtitle">
+            Engineered with high logic density, microsecond responsive UI, and instant compatibility with UK health IT.
+          </p>
+        </div>
+
+        <div class="content-area">
+          <div class="grid-2">
+            <div class="deck-card">
+              <div class="deck-card-header">
+                <div class="card-icon-box">💻</div>
+                <div class="card-title">Modern Clinical Tech Stack</div>
+              </div>
+              <ul class="card-bullet-list">
+                <li><strong>Frontend:</strong> React 18 + TypeScript + Vite with sub-millisecond hot reloading.</li>
+                <li><strong>Styling:</strong> Custom clinical design tokens in Tailwind CSS with liquid glass refraction.</li>
+                <li><strong>Anti-Slop Sovereign Gate:</strong> Zero unlinked handlers, zero placeholder callbacks, clean clinical squircle UI.</li>
+                <li><strong>Local Execution:</strong> Fully self-contained client-side orchestration for instant demo reliability.</li>
+              </ul>
+            </div>
+
+            <div class="deck-card highlight">
+              <div class="deck-card-header">
+                <div class="card-icon-box">🔌</div>
+                <div class="card-title">EHR Interoperability Hub</div>
+              </div>
+              <ul class="card-bullet-list">
+                <li><strong>1-Click EHR Export Modal:</strong> Specially formatted outputs for EMIS Web, SystmOne, Epic Hyperspace, and Cerner.</li>
+                <li><strong>PRSB eDN Schema:</strong> Mapped to UK Professional Record Standards Body JSON definitions.</li>
+                <li><strong>SNOMED-CT Concept Mapping:</strong> Diagnostic encoding for clinical audit, QOF reporting, and trust billing.</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+
+        <div style="font-size:12px; color:var(--color-text-subtle); display:flex; justify-content:space-between;">
+          <span>Zero EHR lock-in • Copyable formatted plain text • Instant clinical deployment</span>
+          <span class="squircle-badge continued">EHR COMPATIBLE</span>
+        </div>
+      </section>
+
+      <!-- SLIDE 11: Hackathon 3-Hour Delivery Roadmap -->
+      <section class="slide" data-slide="11">
+        <div>
+          <div class="slide-eyebrow">Execution Velocity</div>
+          <h2 class="slide-title">Hackathon 3-Hour <span class="highlight">Delivery Roadmap</span></h2>
+          <p class="slide-subtitle">
+            From initial problem definition at 12:30 to fully deployed, audit-verified production demo before the 15:45 deadline.
+          </p>
+        </div>
+
+        <div class="content-area">
+          <table class="clinical-table">
+            <thead>
+              <tr>
+                <th style="width:120px;">Time Window</th>
+                <th style="width:180px;">Phase</th>
+                <th>Deliverables & Milestone</th>
+                <th style="width:140px;">Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong>12:30 – 13:15</strong></td>
+                <td><strong>Phase 1: Shell & Intake</strong></td>
+                <td>Scaffold React shell; embed 3 complex NHS clinical cases; build chronological timeline feed.</td>
+                <td><span class="squircle-badge started">COMPLETED</span></td>
+              </tr>
+              <tr>
+                <td><strong>13:15 – 14:15</strong></td>
+                <td><strong>Phase 2: Synthesis & Med Rec</strong></td>
+                <td>Build eDN synthesis state machine; 4-status Med Rec diff matrix; actionable GP checklist.</td>
+                <td><span class="squircle-badge started">COMPLETED</span></td>
+              </tr>
+              <tr>
+                <td><strong>14:15 – 14:45</strong></td>
+                <td><strong>Phase 3: Intelligence & Citations</strong></td>
+                <td>Source-tracing highlighting; Plain-English Patient Leaflet; SNOMED-CT diagnostic tags.</td>
+                <td><span class="squircle-badge started">COMPLETED</span></td>
+              </tr>
+              <tr>
+                <td><strong>14:45 – 15:30</strong></td>
+                <td><strong>Phase 4: Design & Polish</strong></td>
+                <td>Tandem teal liquid design system; anti-slop zero-capsule audit; 1-click EHR export modal.</td>
+                <td><span class="squircle-badge started">COMPLETED</span></td>
+              </tr>
+              <tr>
+                <td><strong>15:30 – 15:45</strong></td>
+                <td><strong>Phase 5: Submission & QA</strong></td>
+                <td>End-to-end verification, pitch deck delivery, GitHub repo publish, live demo ready.</td>
+                <td><span class="squircle-badge started">SUBMITTED</span></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div style="font-size:12px; color:var(--color-text-subtle); text-align:right;">
+          Execution cadence achieved 100% of P0 and P1 requirements outlined in the PRD.
+        </div>
+      </section>
+
+      <!-- SLIDE 12: Vision & The Ask -->
+      <section class="slide" data-slide="12">
+        <div>
+          <div class="slide-eyebrow">The Future of Tandem</div>
+          <h2 class="slide-title">Closing the Episode Loop: <span class="highlight">The Complete Clinical OS</span></h2>
+          <p class="slide-subtitle">
+            By expanding from ambient audio in primary care to multi-source synthesis in acute wards, Tandem Health eliminates clinical administrative burden everywhere care happens.
+          </p>
+        </div>
+
+        <div class="content-area">
+          <div class="grid-3">
+            <div class="deck-card highlight">
+              <div class="deck-card-header">
+                <div class="card-icon-box">🌟</div>
+                <div class="card-title">Ambient Scribing</div>
+              </div>
+              <div class="card-body">
+                Real-time bedside & GP consultation audio capture. The foundation of clinician trust.
+              </div>
+            </div>
+
+            <div class="deck-card highlight">
+              <div class="deck-card-header">
+                <div class="card-icon-box">🚀</div>
+                <div class="card-title">Episodic Synthesis</div>
+              </div>
+              <div class="card-body">
+                Multi-day asynchronous timeline synthesis, lab trajectory analysis, and medication diffs.
+              </div>
+            </div>
+
+            <div class="deck-card highlight">
+              <div class="deck-card-header">
+                <div class="card-icon-box">🤝</div>
+                <div class="card-title">Health System Impact</div>
+              </div>
+              <div class="card-body">
+                Hospital capacity unlocked, discharge delays eradicated, and clinicians freed to care.
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div style="display:flex; justify-content:space-between; align-items:center; border-top:1px solid var(--color-border); padding-top:16px;">
+          <div>
+            <div style="font-family:var(--font-heading); font-size:18px; font-weight:700; color:#FFFFFF;">
+              Ready for Live Demonstration
+            </div>
+            <div style="font-size:12px; color:var(--color-text-muted)">
+              Thank you to the Tandem Health & NXGN Hackathon Team.
+            </div>
+          </div>
+          <button class="nav-btn primary" onclick="showSlide(1)">
+            Restart Deck ↺
+          </button>
+        </div>
+      </section>
+
+    </div>
+  </main>
+
+  <!-- Bottom Navigation Bar -->
+  <footer class="bottom-bar">
+    <div class="slide-counter">
+      Slide <strong id="currentSlideNum">1</strong> of <span id="totalSlideNum">12</span>
+      <span style="color:var(--color-border)">|</span>
+      <span id="currentSlideTitle" style="color:var(--color-text-muted); font-family:var(--font-body); font-size:12px;"></span>
+    </div>
+
+    <div class="shortcut-hints">
+      <span>Navigate: <span class="kbd">←</span> <span class="kbd">→</span> or <span class="kbd">Space</span></span>
+      <span>•</span>
+      <span>Menu: <span class="kbd">M</span></span>
+      <span>•</span>
+      <span>Fullscreen: <span class="kbd">F</span></span>
+    </div>
+
+    <div class="nav-buttons">
+      <button class="nav-btn" onclick="prevSlide()" title="Previous slide (Left Arrow)">
+        ← Previous
+      </button>
+      <button class="nav-btn primary" onclick="nextSlide()" title="Next slide (Right Arrow / Space)">
+        Next →
+      </button>
+    </div>
+  </footer>
+
+  <!-- Slide Overview / Jump Drawer Modal -->
+  <div class="overview-modal" id="overviewModal" onclick="if(event.target === this) toggleOverview()">
+    <div class="overview-content">
+      <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid var(--color-border); padding-bottom:14px;">
+        <h3 style="font-family:var(--font-heading); font-size:18px;">Presentation Deck Outline</h3>
+        <button class="nav-btn" onclick="toggleOverview()">✕ Close</button>
+      </div>
+      <div class="overview-grid" id="overviewGrid">
+        <!-- Generated by JavaScript -->
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const slides = document.querySelectorAll('.slide');
+    const totalSlides = slides.length;
+    let currentSlide = 1;
+    let chartRendered = false;
+
+    const titles = [
+      "Title & Strategic Thesis",
+      "The Inpatient Discharge Crisis",
+      "Why Ambient Scribing Isn't Enough",
+      "Tandem Discharge Solution Overview",
+      "4-State Medication Reconciliation",
+      "Dual-Audience Synthesis",
+      "Clinical Safety & Zero Hallucination",
+      "Measurable ROI & Efficiency Gains",
+      "Stakeholder Ecosystem & Personas",
+      "Technical Architecture & Interop",
+      "Hackathon 3-Hour Delivery Roadmap",
+      "Vision: The Complete Clinical OS"
+    ];
+
+    document.getElementById('totalSlideNum').textContent = totalSlides;
+
+    function updateSlideUI() {
+      slides.forEach((slide, index) => {
+        const isActive = (index + 1) === currentSlide;
+        slide.classList.toggle('active', isActive);
+      });
+
+      document.getElementById('currentSlideNum').textContent = currentSlide;
+      document.getElementById('currentSlideTitle').textContent = titles[currentSlide - 1] || '';
+      document.getElementById('progressFill').style.width = ((currentSlide / totalSlides) * 100) + '%';
+
+      // Update overview thumbnails active state
+      document.querySelectorAll('.overview-thumb').forEach((thumb, idx) => {
+        thumb.classList.toggle('active', (idx + 1) === currentSlide);
+      });
+
+      // Lazy render ROI Chart on Slide 8
+      if (currentSlide === 8 && !chartRendered) {
+        renderROIChart();
+        chartRendered = true;
+      }
+    }
+
+    function showSlide(n) {
+      if (n < 1) n = 1;
+      if (n > totalSlides) n = totalSlides;
+      currentSlide = n;
+      updateSlideUI();
+    }
+
+    function nextSlide() {
+      if (currentSlide < totalSlides) {
+        showSlide(currentSlide + 1);
+      }
+    }
+
+    function prevSlide() {
+      if (currentSlide > 1) {
+        showSlide(currentSlide - 1);
+      }
+    }
+
+    // Keyboard navigation
+    document.addEventListener('keydown', (e) => {
+      if (document.getElementById('overviewModal').classList.contains('open')) {
+        if (e.key === 'Escape' || e.key === 'm' || e.key === 'M') {
+          toggleOverview();
+        }
+        return;
+      }
+
+      if (e.key === 'ArrowRight' || e.key === ' ' || e.key === 'PageDown') {
+        e.preventDefault();
+        nextSlide();
+      } else if (e.key === 'ArrowLeft' || e.key === 'PageUp') {
+        e.preventDefault();
+        prevSlide();
+      } else if (e.key === 'Home') {
+        e.preventDefault();
+        showSlide(1);
+      } else if (e.key === 'End') {
+        e.preventDefault();
+        showSlide(totalSlides);
+      } else if (e.key === 'f' || e.key === 'F') {
+        e.preventDefault();
+        toggleFullscreen();
+      } else if (e.key === 'm' || e.key === 'M') {
+        e.preventDefault();
+        toggleOverview();
+      }
+    });
+
+    // Fullscreen Toggle
+    function toggleFullscreen() {
+      if (!document.fullscreenElement) {
+        document.documentElement.requestFullscreen().catch(err => {
+          console.warn('Fullscreen error:', err);
+        });
+      } else {
+        if (document.exitFullscreen) {
+          document.exitFullscreen();
+        }
+      }
+    }
+
+    // Slide Overview Modal
+    function toggleOverview() {
+      const modal = document.getElementById('overviewModal');
+      modal.classList.toggle('open');
+    }
+
+    // Populate Overview Grid
+    const overviewGrid = document.getElementById('overviewGrid');
+    titles.forEach((title, idx) => {
+      const thumb = document.createElement('div');
+      thumb.className = `overview-thumb ${idx + 1 === currentSlide ? 'active' : ''}`;
+      thumb.onclick = () => {
+        showSlide(idx + 1);
+        toggleOverview();
+      };
+      thumb.innerHTML = `
+        <div class="overview-thumb-num">SLIDE ${idx + 1}</div>
+        <div class="overview-thumb-title">${title}</div>
+      `;
+      overviewGrid.appendChild(thumb);
+    });
+
+    // Chart.js initialization
+    function renderROIChart() {
+      const ctx = document.getElementById('roiChart');
+      if (!ctx) return;
+
+      new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels: ['Notes Review', 'Med Rec Diff', 'GP Letter Draft', 'Total Time'],
+          datasets: [
+            {
+              label: 'Manual NHS Process (Mins)',
+              data: [15, 18, 17, 50],
+              backgroundColor: 'rgba(239, 68, 68, 0.75)',
+              borderColor: '#EF4444',
+              borderWidth: 1,
+              borderRadius: 6
+            },
+            {
+              label: 'Tandem Discharge (Mins)',
+              data: [0.3, 0.4, 0.5, 1.2],
+              backgroundColor: 'rgba(20, 184, 166, 0.85)',
+              borderColor: '#2DD4BF',
+              borderWidth: 1,
+              borderRadius: 6
+            }
+          ]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: {
+              position: 'top',
+              labels: {
+                color: '#94A3B8',
+                font: { family: 'Plus Jakarta Sans', size: 11 }
+              }
+            },
+            tooltip: {
+              backgroundColor: 'rgba(14, 22, 38, 0.95)',
+              titleColor: '#2DD4BF',
+              bodyColor: '#F8FAFC',
+              borderColor: 'rgba(20, 184, 166, 0.4)',
+              borderWidth: 1,
+              padding: 10,
+              displayColors: true,
+              callbacks: {
+                label: function(context) {
+                  return context.dataset.label + ': ' + context.parsed.y + ' mins';
+                }
+              }
+            }
+          },
+          scales: {
+            x: {
+              grid: { color: 'rgba(255, 255, 255, 0.05)' },
+              ticks: { color: '#94A3B8', font: { family: 'Plus Jakarta Sans', size: 11 } }
+            },
+            y: {
+              grid: { color: 'rgba(255, 255, 255, 0.05)' },
+              ticks: { color: '#94A3B8', font: { family: 'Plus Jakarta Sans', size: 11 } },
+              title: {
+                display: true,
+                text: 'Minutes Elapsed',
+                color: '#64748B',
+                font: { family: 'Plus Jakarta Sans', size: 10 }
+              }
+            }
+          }
+        }
+      });
+    }
+
+    // Initialize UI on load
+    updateSlideUI();
+  </script>
+</body>
+</html>

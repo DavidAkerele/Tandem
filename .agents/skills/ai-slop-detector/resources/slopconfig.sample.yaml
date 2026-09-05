@@ -1,0 +1,33 @@
+# Sample .slopconfig.yaml for modern React / Vite / TypeScript applications
+version: "2.0"
+
+weights:
+  ldr: 0.15
+  inflation: 0.13
+  ddc: 0.62
+  purity: 0.10
+
+ignore:
+  - "node_modules/**"
+  - "dist/**"
+  - "build/**"
+  - ".next/**"
+  - "coverage/**"
+
+patterns:
+  enabled: true
+  severity_threshold: low
+
+  god_function:
+    complexity_threshold: 25
+    lines_threshold: 350
+    domain_overrides: []
+
+  nested_complexity:
+    depth_threshold: 6
+    cc_threshold: 15
+    domain_overrides: []
+
+advanced:
+  use_radon: true
+  min_file_size: 10

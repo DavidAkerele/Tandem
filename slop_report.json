@@ -1,0 +1,36 @@
+================================================================================
+AI CODE QUALITY REPORT
+================================================================================
+
+Project: src/
+Total Files: 13
+Clean Files: 13
+Deficit Files: 0
+Overall Status: CLEAN
+Finding Summary: 17 across 10 files (independent of weighted deficit status)
+  Severity: critical=0, high=16, medium=0, low=1
+
+Project Metrics:
+Scan Coverage: analyzed=13, excluded=0 supported source files, unsupported=0
+  Excluded paths and matching rules are available in JSON output.
+
+ML Scoring: DISABLED (optional secondary signal)
+  Reason: No ML model artifact was configured for this run.
+
+  Metric                           Value  Healthy What It Means
+  -------------------------------------------------------------
+  Average Deficit Score          6.2/100  Lower   Mean file risk; 0 is clean, 100 is severe.
+  Weighted Deficit Score         5.5/100  Lower   Same risk score, weighted by each file's lines of code.
+  Logic Density Ratio (LDR)       84.56%  Higher  Share of code lines that contain real implementation.
+  Inflation-to-Code Ratio (ICR)    0.00x  Lower   Unjustified jargon compared with average cyclomatic complexity.
+  Dependency Usage Ratio (DDC)     0.00%  Higher  Imported libraries that are referenced by runtime code.
+
+  Deficit bands: CLEAN <30  |  SUSPICIOUS 30-50  |  INFLATED 50-70  |  CRITICAL >=70
+
+Next Steps:
+  1. Top concern: Dependency Usage Ratio (DDC) = 0.00% (Higher is healthier). Imported libraries that are referenced by runtime code.
+  2. Run `slop-detector sweep unused-deps .` to list imports and dependencies that are declared but never used.
+
+================================================================================
+FILE-LEVEL ANALYSIS
+================================================================================
