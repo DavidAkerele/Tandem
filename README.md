@@ -120,15 +120,28 @@ Under NHS **DCB0129** (clinical risk management for health IT software manufactu
 - **Cognitive Overload & Handover Omission (Penicillin Anaphylaxis):** During night shift cross-cover, an on-call FY1 doctor selected Co-Amoxiclav 1.2g IV from a CPOE quick-order dropdown without cross-referencing the patient’s red anaphylaxis allergy banner. Tandem blocks synthesis and forces immediate substitution with a safe alternative.
 - **EHR Template Duplication Slip (Adjacent Bed Copy-Paste):** A cross-cover surgical SHO copied the clinical handover note from Bed 11 (patient with acute cholecystitis) into Bed 12 (Mr. Robert Hall). Tandem performs semantic cross-validation against the formal Consultant Radiologist CT report (confirming severe bilateral aspiration pneumonia), eradicating wrong-patient coding slips.
 
-#### C. Safety Gate Enforcement & Audit Trail
+#### C. AI Hallucination & Ungrounded Inference Interception
+- **Extrapolated Type 2 Diabetes & Metformin Order:** During draft discharge generation, the autonomous synthesis engine attempted to invent a secondary diagnosis of Type 2 Diabetes and prescribe Metformin 500mg BD based on a single transient stress hyperglycemia glucose reading of 7.8 mmol/L during acute sepsis. Tandem cross-validates this assertion against ground-truth baseline records (HbA1c was completely normal at 38 mmol/mol; zero prior hypoglycemic prescriptions), flags the hallucinated drift, purges the ungrounded diagnosis, and logs the clinician's verification rationale.
+
+#### D. Permanent Safety Audit Trail & Clinician Comments Log
+Every reconciliation action generates an immutable, GMC-signed audit record adhering to **DCB0129 / DCB0160**:
+- **Clinician Rationale & Comments:** Clinicians can enter or amend custom medicolegal notes directly within the audit log (e.g., *"Verified with patient bedside allergy history. Penicillin anaphylaxis confirmed; Co-Amoxiclav purged from draft TTO and substituted with targeted oral Ciprofloxacin per microbiology sensitivities."*).
+- **Audit Trail Viewer:** Click *"View Safety Audit Trail & Comments Log"* on the alert banner to review timestamped entries, category tags (`[SYSTEM ERROR]`, `[HUMAN FACTOR]`, `[AI HALLUCINATION INTERCEPTED]`), and signed doctor notes.
+
+#### E. Dynamic Timeline Flag Lifecycle & Automatic Unflagging
+- **Active Hazard State:** When a discrepancy or hallucination is detected, the associated chronological card on the left timeline is actively flagged with a bold red border (`border-l-4 border-l-[#d93025]`), a red timeline dot, and a warning action banner.
+- **Automatic Unflagging upon Resolution:** Once the clinician audits and reconciles the issue, **the timeline event automatically stops being flagged as a hazard**. The red border and red warning dot are removed, transitioning into a calm, verified green audit seal (`CheckCircle2 "Safety Flag Reconciled & Audited"`) displaying the resolving doctor's GMC credentials and comment snippet.
+
+#### F. Dual-Axis Clinical Risk Matrix
 | Conflict ID | Failure Vector | Root Cause Mechanism | Protocol Mitigation |
 | :--- | :--- | :--- | :--- |
 | `conflict-penicillin-coamox` | **Human Factor** | Cognitive fatigue & quick-order dropdown omission | Cancel Co-Amoxiclav; enforce Allergy Cross-Check |
 | `conflict-potassium-spironolactone` | **Hybrid Socio-Technical** | Pneumatic shear hemolysis + unverified drug order | Hold Spironolactone; verify VBG via hand portering |
 | `conflict-radiology-diagnosis` | **Human Factor** | Adjacent bed template copy-paste error | Reconcile diagnosis with formal CT PACS report |
 | `conflict-hl7-microbiology-latency` | **System Error** | HL7 broker buffer queue 52-minute telemetry lag | Flush gateway buffer; update targeted sensitivity |
+| `conflict-ai-hallucination-diabetes` | **AI Hallucination** | Ungrounded inference from transient sepsis glucose | Purge diabetes diagnosis; cancel Metformin order |
 
-When any contradiction is active, the primary dispatch button is locked (`Safety Locked`), displaying a high-contrast clinical alert banner requiring a registered clinician (e.g. Dr. Alex Smith, GMC 7849201) to verify side-by-side sources and apply mitigations before discharge documents can be finalized.
+When any contradiction is active, the primary dispatch button is locked (`Safety Locked`), requiring clinician verification before discharge documents can be finalized.
 
 ---
 

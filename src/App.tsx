@@ -3,7 +3,7 @@ import { Header } from './components/Header';
 import { TimelineFeed } from './components/TimelineFeed';
 import { SynthesizerCockpit } from './components/SynthesizerCockpit';
 import { mockClinicalCases } from './data/mockCases';
-import { ClinicalCase, TimelineEvent, DischargeSummary, CareSetting } from './types/clinical';
+import { ClinicalCase, TimelineEvent, DischargeSummary, CareSetting, AuditTrailEntry } from './types/clinical';
 
 export const App: React.FC = () => {
   const [cases, setCases] = useState<ClinicalCase[]>(mockClinicalCases);
@@ -110,6 +110,14 @@ export const App: React.FC = () => {
     setCases((prev) =>
       prev.map((c) => {
         if (c.id === selectedCaseId && c.dataContradictions) {
+          const targetConflict = c.dataContradictions.find((x) => x.id === contradictionId);
+          const chosenOption = targetConflict?.resolutionOptions.find((o) => o.id === resolutionId);
+          const effectiveComment =
+            notes && notes.trim()
+              ? notes.trim()
+              : chosenOption?.actionDescription ||
+                'Reconciled via clinician safety verification and DCB0129 guardrail.';
+
           const updatedContradictions = c.dataContradictions.map((conflict) => {
             if (conflict.id === contradictionId) {
               return {
@@ -118,7 +126,7 @@ export const App: React.FC = () => {
                 selectedResolutionId: resolutionId,
                 resolvedBy: 'Dr. Alex Smith (GMC 7849201)',
                 resolvedAt: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-                resolutionNotes: notes,
+                resolutionNotes: effectiveComment,
               };
             }
             return conflict;
@@ -168,11 +176,43 @@ export const App: React.FC = () => {
               });
             }
           }
+          if (contradictionId === 'conflict-ai-hallucination-diabetes') {
+            // Remove hallucinated Metformin
+            updatedSummary.medications = updatedSummary.medications.filter(
+              (m) => !m.drugName.toLowerCase().includes('metformin')
+            );
+            // Remove hallucinated diabetes diagnosis
+            updatedSummary.secondaryDiagnoses = updatedSummary.secondaryDiagnoses.filter(
+              (d) => !d.term.toLowerCase().includes('diabetes')
+            );
+          }
+
+          // Create permanent Audit Trail Log Entry with comments
+          const auditEntry: AuditTrailEntry = {
+            id: `audit-${Date.now()}-${contradictionId}`,
+            timestamp:
+              new Date().toLocaleDateString('en-GB') +
+              ' ' +
+              new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+            caseId: c.id,
+            targetItemTitle: targetConflict?.title || contradictionId,
+            conflictId: contradictionId,
+            category: targetConflict?.errorOrigin || 'human_error',
+            actionTaken: chosenOption ? chosenOption.label : 'Reconciled with safety guardrail',
+            actor: 'Dr. Alex Smith (GMC 7849201)',
+            comments: effectiveComment,
+            previousState: targetConflict?.description || '',
+            newState: chosenOption?.actionDescription || 'Safety verified and reconciled',
+            status: 'reconciled',
+          };
+
+          const updatedAuditTrail = [...(c.auditTrail || []), auditEntry];
 
           return {
             ...c,
             dataContradictions: updatedContradictions,
             defaultSummary: updatedSummary,
+            auditTrail: updatedAuditTrail,
           };
         }
         return c;
@@ -180,16 +220,25 @@ export const App: React.FC = () => {
     );
   };
 
-  // Resolve all contradictions with recommended clinical safety guardrails
+  // Resolve all contradictions with recommended clinical safety guardrails & rationale comments
   const handleResolveAllContradictions = () => {
     if (!currentCase.dataContradictions) return;
     currentCase.dataContradictions.forEach((conflict) => {
       const rec = conflict.resolutionOptions.find((o) => o.isRecommended) || conflict.resolutionOptions[0];
-      handleResolveContradiction(
-        conflict.id,
-        rec.id,
-        'Auto-resolved via recommended NHS DCB0129 clinical safety guardrail.'
-      );
+      let auditComment = 'Auto-resolved via recommended NHS DCB0129 clinical safety guardrail.';
+      if (conflict.id === 'conflict-penicillin-coamox') {
+        auditComment = 'Verified with allergy band; Penicillin anaphylaxis confirmed. Co-Amoxiclav blocked, non-beta-lactam cover verified.';
+      } else if (conflict.id === 'conflict-potassium-spironolactone') {
+        auditComment = 'Withheld Spironolactone; repeated hand-carried non-hemolysed VBG confirmed K+ 4.5 mmol/L (initial sample was transit hemolysed).';
+      } else if (conflict.id === 'conflict-radiology-diagnosis') {
+        auditComment = 'Reconciled against formal CT report (Bilateral aspiration pneumonia); Bed 11 cholecystitis copy-paste error purged.';
+      } else if (conflict.id === 'conflict-hl7-microbiology-latency') {
+        auditComment = 'Flushed HL7 gateway buffer; synchronized resistant Klebsiella antibiogram and initiated targeted oral Ciprofloxacin.';
+      } else if (conflict.id === 'conflict-ai-hallucination-diabetes') {
+        auditComment = 'Purged ungrounded Type 2 Diabetes diagnosis and cancelled Metformin order (normal baseline HbA1c 38 mmol/mol).';
+      }
+
+      handleResolveContradiction(conflict.id, rec.id, auditComment);
     });
   };
 
@@ -233,6 +282,7 @@ export const App: React.FC = () => {
             <TimelineFeed
               patient={currentCase.patient}
               timeline={currentCase.timeline}
+              contradictions={currentCase.dataContradictions}
               activeCitationId={activeCitationId}
               onAddNote={handleAddNote}
               onInspectConflict={() => setIsContradictionModalOpen(true)}
@@ -247,6 +297,7 @@ export const App: React.FC = () => {
               recordSummary={currentCase.recordSummary}
               careSetting={currentCase.careSetting}
               contradictions={currentCase.dataContradictions}
+              auditTrail={currentCase.auditTrail || []}
               onUpdateSummary={handleUpdateSummary}
               onResolveContradiction={handleResolveContradiction}
               onResolveAllContradictions={handleResolveAllContradictions}

@@ -8,6 +8,8 @@ import {
   Server,
   UserCheck,
   Cpu,
+  Sparkles,
+  ClipboardList,
 } from 'lucide-react';
 import { DataContradiction } from '../types/clinical';
 
@@ -32,6 +34,9 @@ export const ClinicalSafetyAlertBanner: React.FC<ClinicalSafetyAlertBannerProps>
   const humanErrorsCount = contradictions.filter(
     (c) => c.errorOrigin === 'human_error' || c.humanError !== undefined
   ).length;
+  const aiHallucinationsCount = contradictions.filter(
+    (c) => c.errorOrigin === 'ai_hallucination' || c.aiHallucination !== undefined
+  ).length;
 
   if (isAllResolved) {
     return (
@@ -43,24 +48,24 @@ export const ClinicalSafetyAlertBanner: React.FC<ClinicalSafetyAlertBannerProps>
           <div>
             <div className="flex items-center space-x-2">
               <span className="text-xs font-semibold text-[#202124]">
-                Clinical Contradictions Reconciled & Safety Gate Passed
+                Clinical Contradictions Reconciled &amp; Safety Gate Passed
               </span>
               <span className="text-[10px] font-semibold px-2 py-0.5 rounded-md bg-emerald-50 text-emerald-800 border border-emerald-200">
                 DCB0129 Compliant
               </span>
             </div>
             <p className="text-[11px] text-[#5f6368] mt-0.5">
-              All {contradictions.length} clinical safety conflicts (system telemetry latency, transit artifacts & clinician slips) reconciled by Dr. Alex Smith (GMC 7849201).
+              All {contradictions.length} clinical safety conflicts (system telemetry latency, transit artifacts, clinician slips &amp; AI hallucinations) reconciled by Dr. Alex Smith (GMC 7849201).
             </p>
           </div>
         </div>
 
         <button
           onClick={onOpenReviewModal}
-          className="inline-flex items-center space-x-1.5 px-3 py-1.5 rounded-lg border border-[#dadce0] text-xs font-medium text-[#3c4043] hover:bg-[#f1f3f4] transition-colors"
+          className="inline-flex items-center space-x-1.5 px-3 py-1.5 rounded-lg border border-[#dadce0] text-xs font-medium text-[#3c4043] hover:bg-[#f1f3f4] transition-colors cursor-pointer"
         >
-          <ShieldCheck className="w-3.5 h-3.5 text-[#188038]" />
-          <span>View Safety Resolution Audit Trail</span>
+          <ClipboardList className="w-3.5 h-3.5 text-[#188038]" />
+          <span>View Safety Audit Trail &amp; Comments Log</span>
         </button>
       </div>
     );
@@ -90,9 +95,15 @@ export const ClinicalSafetyAlertBanner: React.FC<ClinicalSafetyAlertBannerProps>
                 <UserCheck className="w-3 h-3 text-[#b06000]" />
                 <span>{humanErrorsCount} Clinician Factors</span>
               </span>
+              {aiHallucinationsCount > 0 && (
+                <span className="text-[10px] font-medium px-2 py-0.5 rounded-md bg-[#f1f3f4] text-[#3c4043] border border-[#dadce0] inline-flex items-center space-x-1">
+                  <Sparkles className="w-3 h-3 text-purple-700" />
+                  <span>{aiHallucinationsCount} AI Hallucinations</span>
+                </span>
+              )}
             </div>
             <p className="text-xs text-[#5f6368] mt-1">
-              The AI Safety Engine identified data discrepancies stemming from both hardware/telemetry transit failures (HL7 broker lag, pneumatic tube hemolysis) and human EHR slips. Discharge dispatch is safety-locked.
+              The AI Safety Engine flagged data discrepancies from hardware/telemetry transit failures (HL7 broker lag, tube hemolysis), human clinician slips, and ungrounded AI inferences. Discharge dispatch is locked.
             </p>
           </div>
         </div>
@@ -100,10 +111,10 @@ export const ClinicalSafetyAlertBanner: React.FC<ClinicalSafetyAlertBannerProps>
         {/* Action Button */}
         <button
           onClick={onOpenReviewModal}
-          className="inline-flex items-center space-x-1.5 px-4 py-2 rounded-lg bg-[#d93025] hover:bg-[#b3261e] text-white text-xs font-medium transition-colors shadow-xs flex-shrink-0"
+          className="inline-flex items-center space-x-1.5 px-4 py-2 rounded-lg bg-[#d93025] hover:bg-[#b3261e] text-white text-xs font-medium transition-colors shadow-xs flex-shrink-0 cursor-pointer"
         >
           <AlertTriangle className="w-3.5 h-3.5" />
-          <span>Audit & Resolve Conflicts ({unresolvedCount})</span>
+          <span>Audit &amp; Resolve Conflicts ({unresolvedCount})</span>
           <ArrowRight className="w-3 h-3" />
         </button>
       </div>
@@ -116,13 +127,14 @@ export const ClinicalSafetyAlertBanner: React.FC<ClinicalSafetyAlertBannerProps>
         {contradictions.map((conflict, idx) => {
           const isSystem = conflict.errorOrigin === 'system_error';
           const isHybrid = conflict.errorOrigin === 'hybrid_error';
-          const isHuman = conflict.errorOrigin === 'human_error' || (!isSystem && !isHybrid);
+          const isHallucination = conflict.errorOrigin === 'ai_hallucination';
+          const isHuman = conflict.errorOrigin === 'human_error' || (!isSystem && !isHybrid && !isHallucination);
 
           return (
             <button
               key={conflict.id}
               onClick={onOpenReviewModal}
-              className={`text-[11px] font-medium px-2.5 py-1 rounded-md border inline-flex items-center space-x-1.5 transition-colors ${
+              className={`text-[11px] font-medium px-2.5 py-1 rounded-md border inline-flex items-center space-x-1.5 transition-colors cursor-pointer ${
                 conflict.isResolved
                   ? 'bg-emerald-50 text-emerald-800 border-emerald-200 line-through opacity-70'
                   : 'bg-white text-[#202124] border-[#dadce0] hover:border-red-300 hover:bg-red-50/40'
@@ -130,7 +142,7 @@ export const ClinicalSafetyAlertBanner: React.FC<ClinicalSafetyAlertBannerProps>
             >
               <span className="font-bold text-[#5f6368]">{idx + 1}.</span>
               <span className="truncate max-w-[260px]">{conflict.title}</span>
-              
+
               {/* Origin badge */}
               <span
                 className={`text-[9px] font-bold px-1.5 py-0.2 rounded-xs uppercase tracking-tight flex items-center space-x-1 ${
@@ -138,13 +150,16 @@ export const ClinicalSafetyAlertBanner: React.FC<ClinicalSafetyAlertBannerProps>
                     ? 'bg-blue-50 text-blue-800 border border-blue-200'
                     : isHybrid
                     ? 'bg-purple-50 text-purple-800 border border-purple-200'
+                    : isHallucination
+                    ? 'bg-purple-100 text-purple-900 border border-purple-300'
                     : 'bg-amber-50 text-amber-800 border border-amber-200'
                 }`}
               >
                 {isSystem && <Server className="w-2.5 h-2.5 mr-0.5 inline" />}
                 {isHybrid && <Cpu className="w-2.5 h-2.5 mr-0.5 inline" />}
+                {isHallucination && <Sparkles className="w-2.5 h-2.5 mr-0.5 inline" />}
                 {isHuman && <UserCheck className="w-2.5 h-2.5 mr-0.5 inline" />}
-                <span>{isSystem ? 'System' : isHybrid ? 'Hybrid' : 'Human'}</span>
+                <span>{isSystem ? 'System' : isHybrid ? 'Hybrid' : isHallucination ? 'AI Drift' : 'Human'}</span>
               </span>
 
               {conflict.isResolved ? (

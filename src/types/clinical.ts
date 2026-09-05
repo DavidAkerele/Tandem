@@ -51,6 +51,9 @@ export interface TimelineEvent {
   };
   contradictionId?: string;
   contradictionSeverity?: 'critical' | 'high' | 'moderate';
+  isFlagged?: boolean;
+  flagReason?: string;
+  flagType?: 'contradiction' | 'ai_hallucination' | 'system_error';
 }
 
 export interface MedicationDiffItem {
@@ -263,7 +266,7 @@ export interface ContradictionResolutionOption {
   isRecommended?: boolean;
 }
 
-export type ContradictionRootCause = 'human_error' | 'system_error' | 'hybrid_error';
+export type ContradictionRootCause = 'human_error' | 'system_error' | 'hybrid_error' | 'ai_hallucination';
 
 export interface SystemErrorDetails {
   systemComponent: string;
@@ -278,10 +281,32 @@ export interface HumanErrorDetails {
   errorType: 'transcription_slip' | 'wrong_patient_copy_paste' | 'omission_during_handover' | 'rule_violation';
 }
 
+export interface AIHallucinationDetails {
+  hallucinatedClaim: string;
+  sourceEvidenceLacking: string;
+  groundTruthRecord: string;
+  mitigationAction: string;
+}
+
+export interface AuditTrailEntry {
+  id: string;
+  timestamp: string;
+  caseId: string;
+  targetItemTitle: string;
+  conflictId?: string;
+  category: ContradictionRootCause;
+  actionTaken: string;
+  actor: string;
+  comments: string;
+  previousState?: string;
+  newState?: string;
+  status: 'reconciled' | 'overridden' | 'flagged';
+}
+
 export interface DataContradiction {
   id: string;
   severity: 'critical' | 'high' | 'moderate';
-  category: 'allergy_medication' | 'biochemistry_prescription' | 'radiology_diagnosis' | 'clinical_history' | 'telemetry_sync_latency';
+  category: 'allergy_medication' | 'biochemistry_prescription' | 'radiology_diagnosis' | 'clinical_history' | 'telemetry_sync_latency' | 'ai_hallucination_drift';
   errorOrigin: ContradictionRootCause;
   title: string;
   description: string;
@@ -291,6 +316,7 @@ export interface DataContradiction {
   resolutionOptions: ContradictionResolutionOption[];
   systemError?: SystemErrorDetails;
   humanError?: HumanErrorDetails;
+  aiHallucination?: AIHallucinationDetails;
   isResolved?: boolean;
   selectedResolutionId?: string;
   resolvedBy?: string;
@@ -310,4 +336,5 @@ export interface ClinicalCase {
   recordSummary: RecordSummary;
   defaultSummary: DischargeSummary;
   dataContradictions?: DataContradiction[];
+  auditTrail?: AuditTrailEntry[];
 }

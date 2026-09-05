@@ -2,13 +2,14 @@ import React, { useState, useMemo } from 'react';
 import {
   FileText, PlusCircle, FileUp, Search, X, AlertTriangle
 } from 'lucide-react';
-import { PatientDemographics, TimelineEvent } from '../types/clinical';
+import { PatientDemographics, TimelineEvent, DataContradiction } from '../types/clinical';
 import { AddWardNoteModal } from './modals/AddWardNoteModal';
 import { TimelineEventCard } from './TimelineEventCard';
 
 interface TimelineFeedProps {
   patient: PatientDemographics;
   timeline: TimelineEvent[];
+  contradictions?: DataContradiction[];
   activeCitationId: string | null;
   onAddNote: (newNote: Omit<TimelineEvent, 'id'>) => void;
   onInspectConflict?: (contradictionId: string) => void;
@@ -19,6 +20,7 @@ type CategoryFilter = 'all' | 'consults' | 'labs' | 'meds' | 'imaging' | 'triage
 export const TimelineFeed: React.FC<TimelineFeedProps> = ({
   patient,
   timeline,
+  contradictions,
   activeCitationId,
   onAddNote,
   onInspectConflict,
@@ -261,6 +263,7 @@ export const TimelineFeed: React.FC<TimelineFeedProps> = ({
                   event={event}
                   isCited={activeCitationId === event.id}
                   isPrimaryCare={isPrimaryCare}
+                  contradictions={contradictions}
                   onInspectConflict={onInspectConflict}
                 />
               ))}

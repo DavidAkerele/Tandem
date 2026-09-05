@@ -4,7 +4,7 @@ import {
   CheckCircle2, Eye, EyeOff, Loader2, ShieldCheck,
   Layers, ClipboardCheck, Stethoscope, Hospital, AlertTriangle, ShieldAlert
 } from 'lucide-react';
-import { DischargeSummary, PreConsultBriefing, RecordSummary, CareSetting, DataContradiction } from '../types/clinical';
+import { DischargeSummary, PreConsultBriefing, RecordSummary, CareSetting, DataContradiction, AuditTrailEntry } from '../types/clinical';
 import { PreConsultBriefingTab } from './tabs/PreConsultBriefingTab';
 import { RecordSummaryTab } from './tabs/RecordSummaryTab';
 import { MedicalEdnTab } from './tabs/MedicalEdnTab';
@@ -21,6 +21,7 @@ interface SynthesizerCockpitProps {
   recordSummary: RecordSummary;
   careSetting: CareSetting;
   contradictions?: DataContradiction[];
+  auditTrail?: AuditTrailEntry[];
   onUpdateSummary: (updated: DischargeSummary) => void;
   onResolveContradiction?: (contradictionId: string, resolutionId: string, notes?: string) => void;
   onResolveAllContradictions?: () => void;
@@ -38,6 +39,7 @@ export const SynthesizerCockpit: React.FC<SynthesizerCockpitProps> = ({
   recordSummary,
   careSetting,
   contradictions,
+  auditTrail,
   onUpdateSummary,
   onResolveContradiction,
   onResolveAllContradictions,
@@ -330,6 +332,7 @@ export const SynthesizerCockpit: React.FC<SynthesizerCockpitProps> = ({
         isOpen={isConflictModalOpen}
         onClose={() => setIsConflictModalOpen(false)}
         contradictions={contradictions || []}
+        auditTrail={auditTrail}
         onResolveContradiction={(id, resId, notes) => {
           if (onResolveContradiction) onResolveContradiction(id, resId, notes);
         }}
