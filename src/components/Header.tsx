@@ -37,17 +37,16 @@ export const Header: React.FC<HeaderProps> = ({
   return (
     <header className="sticky top-0 z-40 bg-white border-b border-[#dadce0] flex-shrink-0">
       <div className="w-full px-4 lg:px-8 xl:px-12 h-16 flex items-center justify-between gap-3">
-        {/* Left: Product Title with Google-Style Clean Minimal Icon */}
+        {/* Left: ClinBrief Brand Logo */}
         <div className="flex items-center space-x-3 flex-shrink-0">
-          <div className="w-9 h-9 rounded-lg bg-[#f1f3f4] border border-[#dadce0] flex items-center justify-center text-[#1a73e8]">
-            <Activity className="w-5 h-5" />
-          </div>
-          <div className="flex items-center space-x-2">
-            <span className="text-lg font-semibold text-[#202124] tracking-tight">Tandem</span>
-            <span className="text-xs font-medium px-2 py-0.5 rounded-md bg-[#f1f3f4] text-[#5f6368] border border-[#dadce0] hidden sm:inline-block">
-              Clinical Intelligence
-            </span>
-          </div>
+          <img
+            src={`${(import.meta.env.BASE_URL || '/').replace(/\/$/, '')}/clinbrief_logo_blue.png`}
+            alt="ClinBrief Logo"
+            className="h-8 md:h-9 w-auto object-contain cursor-pointer"
+          />
+          <span className="text-[11px] font-medium px-2 py-0.5 rounded-md bg-[#e8f0fe] text-[#1a73e8] border border-[#d2e3fc] hidden sm:inline-block">
+            Clinical Dashboard
+          </span>
         </div>
 
         {/* Center: Care Setting Switcher & Case Selector */}

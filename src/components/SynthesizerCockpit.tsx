@@ -216,16 +216,16 @@ export const SynthesizerCockpit: React.FC<SynthesizerCockpitProps> = ({
       {/* Part Underneath: Independently Scrollable Active Tab Content */}
       <div className="flex-1 min-h-0 overflow-y-auto pr-1 pb-16 space-y-4 custom-scrollbar">
         {isSynthesizing ? (
-          <div className="liquid-glass-card rounded-2xl border border-white/80 p-10 text-center animate-fade-in">
-            <div className="w-14 h-14 rounded-2xl bg-blue-50/80 border border-blue-200/80 text-blue-600 flex items-center justify-center mx-auto mb-4 shadow-xs">
+          <div className="bg-white rounded-xl border border-[#dadce0] p-10 text-center animate-fade-in shadow-xs">
+            <div className="w-14 h-14 rounded-xl bg-[#e8f0fe] border border-[#d2e3fc] text-[#1a73e8] flex items-center justify-center mx-auto mb-4">
               <Loader2 className="w-7 h-7 animate-spin" />
             </div>
-            <h3 className="text-base font-semibold text-slate-900 tracking-tight">
+            <h3 className="text-base font-semibold text-[#202124] tracking-tight">
               {isPrimaryCare
                 ? 'Synthesizing Primary Care Clinical Intelligence...'
                 : 'Synthesizing Clinical Discharge Package...'}
             </h3>
-            <p className="text-xs text-slate-500 mt-1 max-w-md mx-auto">
+            <p className="text-xs text-[#5f6368] mt-1 max-w-md mx-auto">
               Extracting observations, cross-referencing timeline evidence, and formulating structured clinical insights.
             </p>
 
@@ -237,21 +237,21 @@ export const SynthesizerCockpit: React.FC<SynthesizerCockpitProps> = ({
                 return (
                   <div
                     key={idx}
-                    className={`flex items-center space-x-3 p-3.5 rounded-xl border text-xs transition-all ${
+                    className={`flex items-center space-x-3 p-3 rounded-lg border text-xs transition-all ${
                       isDone
-                        ? 'bg-emerald-50/60 border-emerald-200/80 text-emerald-800 font-medium'
+                        ? 'bg-emerald-50 border-emerald-200 text-emerald-800 font-medium'
                         : isCurrent
-                          ? 'liquid-glass-badge bg-blue-50/80 border-blue-200 text-blue-900 font-semibold shadow-xs'
-                          : 'bg-white/40 border-slate-200/60 text-slate-400'
+                          ? 'bg-[#e8f0fe] border-[#d2e3fc] text-[#1a73e8] font-semibold shadow-xs'
+                          : 'bg-[#f8f9fa] border-[#dadce0] text-[#5f6368]'
                     }`}
                   >
                     <div className="flex-shrink-0">
                       {isDone ? (
                         <CheckCircle2 className="w-4 h-4 text-emerald-600" />
                       ) : isCurrent ? (
-                        <Loader2 className="w-4 h-4 animate-spin text-blue-600" />
+                        <Loader2 className="w-4 h-4 animate-spin text-[#1a73e8]" />
                       ) : (
-                        <div className="w-4 h-4 rounded-full border border-slate-300 flex items-center justify-center text-[10px] text-slate-400">
+                        <div className="w-4 h-4 rounded border border-[#dadce0] flex items-center justify-center text-[10px] text-[#5f6368]">
                           {idx + 1}
                         </div>
                       )}
@@ -264,7 +264,7 @@ export const SynthesizerCockpit: React.FC<SynthesizerCockpitProps> = ({
           </div>
         ) : (
           /* Active Tab Panel */
-          <div className="liquid-glass-card rounded-2xl border border-white/80 p-5 lg:p-7">
+          <div className="bg-white rounded-xl border border-[#dadce0] p-5 lg:p-7 shadow-xs">
             {activeTab === 'preconsult' && (
               <PreConsultBriefingTab
                 briefing={briefing}

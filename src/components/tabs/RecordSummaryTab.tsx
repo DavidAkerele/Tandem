@@ -16,6 +16,24 @@ export const RecordSummaryTab: React.FC<RecordSummaryTabProps> = ({
   showCitations,
 }) => {
   const [selectedImage, setSelectedImage] = useState<ClinicalImageItem | null>(null);
+  const [systemFilter, setSystemFilter] = useState<'all' | 'active' | 'watch' | 'stable'>('all');
+
+  const stableCount = recordSummary.systemsSummary.filter(
+    (s) => s.status === 'stable' || s.status === 'resolved'
+  ).length;
+  const watchCount = recordSummary.systemsSummary.filter((s) => s.status === 'watch').length;
+  const activeCount = recordSummary.systemsSummary.filter((s) => s.status === 'active').length;
+  const totalSystems = recordSummary.systemsSummary.length;
+
+  const stablePct = totalSystems > 0 ? (stableCount / totalSystems) * 100 : 0;
+  const watchPct = totalSystems > 0 ? (watchCount / totalSystems) * 100 : 0;
+  const activePct = totalSystems > 0 ? (activeCount / totalSystems) * 100 : 0;
+
+  const filteredSystems = recordSummary.systemsSummary.filter((item) => {
+    if (systemFilter === 'all') return true;
+    if (systemFilter === 'stable') return item.status === 'stable' || item.status === 'resolved';
+    return item.status === systemFilter;
+  });
 
   const getSystemStatusBadge = (status: SystemsSummaryItem['status']) => {
     switch (status) {
@@ -142,16 +160,111 @@ export const RecordSummaryTab: React.FC<RecordSummaryTabProps> = ({
           </div>
         )}
 
-        {/* Organ Systems Analysis */}
-        <div className="space-y-3">
-          <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold text-[#202124] uppercase tracking-wider">
-              Organ Systems Analysis
-            </span>
+        {/* Organ Systems Clinical Health Matrix & Risk Distribution Chart */}
+        <div className="bg-white rounded-xl border border-[#dadce0] p-5 shadow-xs space-y-3">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-2.5 border-b border-[#f1f3f4] gap-2">
+            <div>
+              <h4 className="text-xs font-semibold text-[#202124] uppercase tracking-wider">
+                Organ Systems Clinical Health Matrix
+              </h4>
+              <p className="text-[11px] text-[#5f6368]">
+                Multisystem risk profile across {totalSystems} physiological domains
+              </p>
+            </div>
+
+            <div className="flex items-center space-x-1.5 text-xs">
+              <button
+                onClick={() => setSystemFilter('all')}
+                className={`px-2.5 py-1 rounded-md text-[11px] font-medium transition-colors ${
+                  systemFilter === 'all'
+                    ? 'bg-[#202124] text-white'
+                    : 'bg-[#f1f3f4] text-[#5f6368] hover:text-[#202124]'
+                }`}
+              >
+                All ({totalSystems})
+              </button>
+              <button
+                onClick={() => setSystemFilter('stable')}
+                className={`px-2.5 py-1 rounded-md text-[11px] font-medium transition-colors ${
+                  systemFilter === 'stable'
+                    ? 'bg-emerald-600 text-white'
+                    : 'bg-emerald-50 text-emerald-800 border border-emerald-200 hover:bg-emerald-100'
+                }`}
+              >
+                Stable ({stableCount})
+              </button>
+              {watchCount > 0 && (
+                <button
+                  onClick={() => setSystemFilter('watch')}
+                  className={`px-2.5 py-1 rounded-md text-[11px] font-medium transition-colors ${
+                    systemFilter === 'watch'
+                      ? 'bg-amber-600 text-white'
+                      : 'bg-amber-50 text-amber-800 border border-amber-200 hover:bg-amber-100'
+                  }`}
+                >
+                  Watch ({watchCount})
+                </button>
+              )}
+              {activeCount > 0 && (
+                <button
+                  onClick={() => setSystemFilter('active')}
+                  className={`px-2.5 py-1 rounded-md text-[11px] font-medium transition-colors ${
+                    systemFilter === 'active'
+                      ? 'bg-red-600 text-white'
+                      : 'bg-red-50 text-red-800 border border-red-200 hover:bg-red-100'
+                  }`}
+                >
+                  Active Focus ({activeCount})
+                </button>
+              )}
+            </div>
           </div>
 
+          {/* Stacked Proportional Distribution Bar */}
+          <div className="space-y-1.5">
+            <div className="h-3 w-full rounded-md overflow-hidden flex bg-[#f1f3f4] border border-[#dadce0]">
+              <div
+                style={{ width: `${stablePct}%` }}
+                className="bg-emerald-500 h-full transition-all duration-500"
+                title={`${stableCount} Stable (${Math.round(stablePct)}%)`}
+              />
+              <div
+                style={{ width: `${watchPct}%` }}
+                className="bg-amber-500 h-full transition-all duration-500"
+                title={`${watchCount} Watch & Monitor (${Math.round(watchPct)}%)`}
+              />
+              <div
+                style={{ width: `${activePct}%` }}
+                className="bg-red-500 h-full transition-all duration-500"
+                title={`${activeCount} Active Focus (${Math.round(activePct)}%)`}
+              />
+            </div>
+
+            <div className="flex items-center justify-between text-[10px] text-[#5f6368] pt-0.5">
+              <span className="flex items-center">
+                <span className="w-2 h-2 rounded-xs bg-emerald-500 mr-1.5 inline-block" />
+                Stable / Resolved: {Math.round(stablePct)}%
+              </span>
+              {watchCount > 0 && (
+                <span className="flex items-center">
+                  <span className="w-2 h-2 rounded-xs bg-amber-500 mr-1.5 inline-block" />
+                  Watch &amp; Monitor: {Math.round(watchPct)}%
+                </span>
+              )}
+              {activeCount > 0 && (
+                <span className="flex items-center">
+                  <span className="w-2 h-2 rounded-xs bg-red-500 mr-1.5 inline-block" />
+                  Active Focus: {Math.round(activePct)}%
+                </span>
+              )}
+            </div>
+          </div>
+        </div>
+
+        {/* Organ Systems Analysis */}
+        <div className="space-y-3">
           <div className="grid grid-cols-1 gap-3">
-            {recordSummary.systemsSummary.map((item) => (
+            {filteredSystems.map((item) => (
               <div
                 key={item.id}
                 className="bg-white rounded-xl border border-[#dadce0] p-4 shadow-xs space-y-3"

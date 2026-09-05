@@ -5,6 +5,7 @@ import {
 import { PatientDemographics, TimelineEvent, DataContradiction } from '../types/clinical';
 import { AddWardNoteModal } from './modals/AddWardNoteModal';
 import { TimelineEventCard } from './TimelineEventCard';
+import { PatientVitalsTelemetry } from './PatientVitalsTelemetry';
 
 interface TimelineFeedProps {
   patient: PatientDemographics;
@@ -154,10 +155,13 @@ export const TimelineFeed: React.FC<TimelineFeedProps> = ({
         )}
       </div>
 
+      {/* Patient Vitals & Physiological Telemetry Strip */}
+      <PatientVitalsTelemetry patient={patient} />
+
       {/* Search & Category Filter Chips */}
       <div className="flex-shrink-0 space-y-2">
         {/* Instant Search Bar */}
-        <div className="relative flex items-center bg-[#f1f3f4] rounded-full px-3.5 py-1.5 border border-transparent focus-within:border-[#1a73e8] focus-within:bg-white transition-all">
+        <div className="relative flex items-center bg-[#f1f3f4] rounded-lg px-3.5 py-1.5 border border-transparent focus-within:border-[#1a73e8] focus-within:bg-white transition-all">
           <Search className="w-3.5 h-3.5 text-[#5f6368] mr-2 flex-shrink-0" />
           <input
             type="text"
@@ -173,7 +177,7 @@ export const TimelineFeed: React.FC<TimelineFeedProps> = ({
           {searchQuery && (
             <button
               onClick={() => setSearchQuery('')}
-              className="p-0.5 text-[#5f6368] hover:text-[#202124] rounded-full"
+              className="p-0.5 text-[#5f6368] hover:text-[#202124] rounded-md"
               title="Clear"
             >
               <X className="w-3.5 h-3.5" />

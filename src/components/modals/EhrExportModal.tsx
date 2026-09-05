@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { X, Copy, Check, FileText, Monitor, CheckCircle } from 'lucide-react';
+import { X, Copy, Check, Monitor } from 'lucide-react';
 import { DischargeSummary } from '../../types/clinical';
 
 interface EhrExportModalProps {
@@ -102,56 +102,59 @@ ${gpActionsText}`;
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/35 backdrop-blur-md p-4 animate-fade-in">
-      <div className="liquid-glass-modal rounded-3xl max-w-3xl w-full max-h-[88vh] flex flex-col overflow-hidden animate-scale-up">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-xs p-4 animate-fade-in">
+      <div className="bg-white rounded-2xl max-w-3xl w-full max-h-[88vh] flex flex-col border border-[#dadce0] shadow-2xl overflow-hidden animate-scale-up">
         {/* Modal Header */}
-        <div className="flex items-center justify-between p-6 border-b border-slate-200/60">
+        <div className="flex items-center justify-between px-6 py-5 border-b border-[#dadce0] bg-white">
           <div className="flex items-center space-x-3">
-            <div className="w-10 h-10 rounded-2xl bg-blue-50/80 border border-blue-200/80 flex items-center justify-center text-blue-600 shadow-2xs">
+            <div className="w-10 h-10 rounded-xl bg-[#e8f0fe] border border-[#d2e3fc] flex items-center justify-center text-[#1a73e8] shadow-2xs">
               <Monitor className="w-5 h-5" />
             </div>
             <div>
-              <h3 className="text-base font-semibold text-slate-900">
+              <h3 className="text-sm font-semibold text-[#202124]">
                 Copy to Clinical EHR / EPR System
               </h3>
-              <p className="text-xs text-slate-500">Formats structured clinical text for direct electronic paste</p>
+              <p className="text-xs text-[#5f6368]">Formats structured clinical text for direct electronic paste</p>
             </div>
           </div>
           <button
             onClick={onClose}
-            className="p-2 text-slate-400 hover:text-slate-600 rounded-xl hover:bg-slate-100 transition-colors"
+            className="p-2 text-[#5f6368] hover:text-[#202124] rounded-lg hover:bg-[#f1f3f4] transition-colors"
           >
             <X className="w-5 h-5" />
           </button>
         </div>
 
         {/* EHR Selector Tabs */}
-        <div className="px-6 pt-4 pb-2 bg-white/40 backdrop-blur-xs border-b border-slate-200/60">
-          <div className="flex liquid-glass-subtle p-1.5 rounded-xl border border-white/80 gap-1.5 shadow-xs">
+        <div className="px-6 py-2.5 bg-[#f8f9fa] border-b border-[#dadce0]">
+          <div className="flex bg-[#f1f3f4] p-1 rounded-lg border border-[#dadce0] gap-1">
             <button
               onClick={() => setSelectedEhr('emis')}
-              className={`flex-1 py-2 text-xs font-semibold rounded-lg transition-all text-center ${selectedEhr === 'emis'
-                  ? 'liquid-glass text-blue-700 shadow-xs border border-white'
-                  : 'text-slate-600 hover:text-slate-900 hover:bg-white/60'
-                }`}
+              className={`flex-1 py-1.5 text-xs font-medium rounded-md transition-all text-center ${
+                selectedEhr === 'emis'
+                  ? 'bg-white text-[#1a73e8] font-semibold shadow-xs border border-[#dadce0]'
+                  : 'text-[#5f6368] hover:text-[#202124] hover:bg-white/50'
+              }`}
             >
               EMIS Web (GP)
             </button>
             <button
               onClick={() => setSelectedEhr('systmone')}
-              className={`flex-1 py-2 text-xs font-semibold rounded-lg transition-all text-center ${selectedEhr === 'systmone'
-                  ? 'liquid-glass text-blue-700 shadow-xs border border-white'
-                  : 'text-slate-600 hover:text-slate-900 hover:bg-white/60'
-                }`}
+              className={`flex-1 py-1.5 text-xs font-medium rounded-md transition-all text-center ${
+                selectedEhr === 'systmone'
+                  ? 'bg-white text-[#1a73e8] font-semibold shadow-xs border border-[#dadce0]'
+                  : 'text-[#5f6368] hover:text-[#202124] hover:bg-white/50'
+              }`}
             >
               TPP SystmOne
             </button>
             <button
               onClick={() => setSelectedEhr('epic')}
-              className={`flex-1 py-2 text-xs font-semibold rounded-lg transition-all text-center ${selectedEhr === 'epic'
-                  ? 'liquid-glass text-blue-700 shadow-xs border border-white'
-                  : 'text-slate-600 hover:text-slate-900 hover:bg-white/60'
-                }`}
+              className={`flex-1 py-1.5 text-xs font-medium rounded-md transition-all text-center ${
+                selectedEhr === 'epic'
+                  ? 'bg-white text-[#1a73e8] font-semibold shadow-xs border border-[#dadce0]'
+                  : 'text-[#5f6368] hover:text-[#202124] hover:bg-white/50'
+              }`}
             >
               Epic Hyperspace
             </button>
@@ -159,27 +162,27 @@ ${gpActionsText}`;
         </div>
 
         {/* Text Area Content */}
-        <div className="p-6 flex-1 overflow-y-auto">
-          <pre className="p-5 bg-slate-900 text-slate-100 rounded-2xl font-mono text-xs leading-relaxed overflow-x-auto whitespace-pre-wrap select-all max-h-[42vh] shadow-inner">
+        <div className="p-6 flex-1 overflow-y-auto bg-white">
+          <pre className="p-5 bg-[#202124] text-[#e8eaed] rounded-xl font-mono text-xs leading-relaxed overflow-x-auto whitespace-pre-wrap select-all max-h-[42vh] border border-[#3c4043] shadow-inner">
             {generateExportText()}
           </pre>
         </div>
 
         {/* Modal Footer */}
-        <div className="flex items-center justify-between p-6 border-t border-slate-100 bg-[#f8fafd]">
-          <span className="text-xs text-slate-500">
+        <div className="flex items-center justify-between px-6 py-4 border-t border-[#dadce0] bg-[#f8f9fa]">
+          <span className="text-xs text-[#5f6368]">
             Compliant with NHS PRSB discharge standards.
           </span>
           <div className="flex items-center space-x-3">
             <button
               onClick={onClose}
-              className="px-5 py-2.5 text-xs font-medium text-slate-600 hover:text-slate-800 rounded-xl hover:bg-slate-200/50 transition-colors"
+              className="px-4 py-2 text-xs font-medium text-[#5f6368] hover:text-[#202124] rounded-lg hover:bg-[#f1f3f4] transition-colors"
             >
               Close
             </button>
             <button
               onClick={handleCopy}
-              className="inline-flex items-center space-x-2 px-6 py-2.5 text-xs font-semibold text-white bg-blue-600 hover:bg-blue-700 rounded-xl shadow-sm transition-all"
+              className="inline-flex items-center space-x-2 px-5 py-2 text-xs font-semibold text-white bg-[#1a73e8] hover:bg-[#1557b0] rounded-lg shadow-xs transition-colors"
             >
               {copied ? (
                 <>

@@ -19,15 +19,13 @@ export const PreConsultBriefingTab: React.FC<PreConsultBriefingTabProps> = ({
   showCitations,
 }) => {
   const [completedGaps, setCompletedGaps] = useState<Record<string, boolean>>({});
-  const [askedQuestions, setAskedQuestions] = useState<Record<string, boolean>>({});
   const [assessedRedFlags, setAssessedRedFlags] = useState<Record<string, boolean>>({});
+  const [selectedPointIndex, setSelectedPointIndex] = useState<number>(
+    Math.max(0, briefing.physiologicalTrajectory.history.length - 1)
+  );
 
   const toggleGap = (id: string) => {
     setCompletedGaps((prev) => ({ ...prev, [id]: !prev[id] }));
-  };
-
-  const toggleQuestion = (id: string) => {
-    setAskedQuestions((prev) => ({ ...prev, [id]: !prev[id] }));
   };
 
   const toggleRedFlag = (id: string) => {
@@ -35,6 +33,52 @@ export const PreConsultBriefingTab: React.FC<PreConsultBriefingTabProps> = ({
   };
 
   const isPrimaryCare = careSetting === 'primary_care';
+
+  const history = briefing.physiologicalTrajectory.history;
+
+  // Extract numeric values for graphical trajectory
+  const parsedPoints = history.map((h, i) => {
+    const match = String(h.scoreOrValue).match(/(\d+(\.\d+)?)/);
+    const num = match ? parseFloat(match[1]) : i + 1;
+    return {
+      index: i,
+      timestamp: h.timestamp,
+      raw: h.scoreOrValue,
+      num,
+      parameters: h.parameters,
+      badgeColor: h.badgeColor,
+    };
+  });
+
+  const numericValues = parsedPoints.map((p) => p.num);
+  const minVal = Math.min(...numericValues);
+  const maxVal = Math.max(...numericValues);
+  const valRange = maxVal - minVal === 0 ? 1 : maxVal - minVal;
+
+  const chartWidth = 640;
+  const chartHeight = 110;
+  const paddingX = 42;
+  const paddingY = 22;
+  const usableWidth = chartWidth - paddingX * 2;
+  const usableHeight = chartHeight - paddingY * 2;
+
+  const svgCoords = parsedPoints.map((p, idx) => {
+    const x = paddingX + (idx / Math.max(1, parsedPoints.length - 1)) * usableWidth;
+    const y = chartHeight - paddingY - ((p.num - minVal) / valRange) * usableHeight;
+    return { x, y, ...p };
+  });
+
+  const pathD = svgCoords.length > 0
+    ? `M ${svgCoords.map((c) => `${c.x.toFixed(1)},${c.y.toFixed(1)}`).join(' L ')}`
+    : '';
+
+  const areaD = svgCoords.length > 0
+    ? `${pathD} L ${svgCoords[svgCoords.length - 1].x.toFixed(1)},${chartHeight - paddingY} L ${svgCoords[0].x.toFixed(1)},${chartHeight - paddingY} Z`
+    : '';
+
+  const totalGaps = briefing.gapsInCare.length;
+  const resolvedGapsCount = briefing.gapsInCare.filter((g) => completedGaps[g.id]).length;
+  const percentGapsResolved = totalGaps > 0 ? Math.round((resolvedGapsCount / totalGaps) * 100) : 100;
 
   const getTrajectoryBadge = (trajectory: PreConsultBriefing['clinicalTrajectory']) => {
     switch (trajectory) {
@@ -170,7 +214,7 @@ export const PreConsultBriefingTab: React.FC<PreConsultBriefingTabProps> = ({
         </div>
       </div>
 
-      {/* Physiological / Biomarker Trajectory Track */}
+      {/* Physiological / Biomarker Trajectory Track with Interactive SVG Chart */}
       <div className="bg-white rounded-xl border border-[#dadce0] p-5 shadow-xs space-y-3">
         <div className="flex items-center justify-between pb-2.5 border-b border-[#f1f3f4]">
           <div>
@@ -178,37 +222,184 @@ export const PreConsultBriefingTab: React.FC<PreConsultBriefingTabProps> = ({
               {briefing.physiologicalTrajectory.label}
             </h4>
             <p className="text-[11px] text-[#5f6368]">
-              {isPrimaryCare ? 'Longitudinal trajectory & blood tests' : 'Inpatient observations'}
+              {isPrimaryCare
+                ? 'Longitudinal clinical biomarker progression curve'
+                : 'Inpatient physiological trajectory & recovery curve'}
             </p>
           </div>
-          <span className="text-xs text-[#5f6368]">
-            {briefing.physiologicalTrajectory.history.length} Data Points
-          </span>
+          <div className="flex items-center space-x-2">
+            <span className="text-[11px] font-medium px-2 py-0.5 rounded-md bg-[#e8f0fe] text-[#1a73e8] border border-[#d2e3fc]">
+              Interactive Telemetry Curve
+            </span>
+            <span className="text-xs text-[#5f6368]">
+              {briefing.physiologicalTrajectory.history.length} Intervals
+            </span>
+          </div>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-2.5">
-          {briefing.physiologicalTrajectory.history.map((step, idx) => (
-            <div
-              key={idx}
-              className="p-3 rounded-lg border border-[#dadce0] bg-[#f8f9fa] space-y-1.5"
-            >
-              <div className="flex items-center justify-between text-[11px] text-[#5f6368]">
-                <span>{step.timestamp}</span>
-              </div>
-              <p className="text-xs font-semibold text-[#202124]">{step.scoreOrValue}</p>
+        {/* SVG Longitudinal Trend Graph */}
+        <div className="p-3 rounded-lg border border-[#dadce0] bg-[#f8f9fa] overflow-hidden">
+          <div className="flex items-center justify-between text-[11px] text-[#5f6368] mb-1">
+            <span className="font-medium text-[#202124]">
+              {briefing.physiologicalTrajectory.type === 'chronic_disease'
+                ? 'Metabolic Target Band (Ref: NICE NG28)'
+                : 'Surgical Acuity & NEWS2 Recovery Target'}
+            </span>
+            <span className="text-[10px] text-[#5f6368]">Click data node to inspect intervals</span>
+          </div>
 
-              {step.parameters && (
-                <div className="pt-1.5 border-t border-[#dadce0] grid grid-cols-2 gap-1 text-[10px]">
-                  {Object.entries(step.parameters).map(([key, val]) => (
-                    <div key={key} className="truncate">
-                      <span className="text-[#5f6368]">{key}: </span>
-                      <span className="font-medium text-[#202124]">{val}</span>
-                    </div>
-                  ))}
-                </div>
+          <div className="w-full overflow-x-auto">
+            <svg
+              viewBox={`0 0 ${chartWidth} ${chartHeight}`}
+              className="w-full h-28 overflow-visible"
+              aria-label="Longitudinal Trajectory Chart"
+            >
+              <defs>
+                <linearGradient id="traj-grad" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stopColor="#1a73e8" stopOpacity="0.22" />
+                  <stop offset="100%" stopColor="#1a73e8" stopOpacity="0.01" />
+                </linearGradient>
+              </defs>
+
+              {/* Background Grid Lines */}
+              <line
+                x1={paddingX}
+                y1={paddingY}
+                x2={chartWidth - paddingX}
+                y2={paddingY}
+                stroke="#dadce0"
+                strokeDasharray="3 3"
+                strokeWidth="1"
+              />
+              <line
+                x1={paddingX}
+                y1={chartHeight / 2}
+                x2={chartWidth - paddingX}
+                y2={chartHeight / 2}
+                stroke="#dadce0"
+                strokeDasharray="3 3"
+                strokeWidth="1"
+              />
+              <line
+                x1={paddingX}
+                y1={chartHeight - paddingY}
+                x2={chartWidth - paddingX}
+                y2={chartHeight - paddingY}
+                stroke="#dadce0"
+                strokeWidth="1"
+              />
+
+              {/* Area fill */}
+              {areaD && <path d={areaD} fill="url(#traj-grad)" />}
+
+              {/* Trend line */}
+              {pathD && (
+                <path
+                  d={pathD}
+                  fill="none"
+                  stroke="#1a73e8"
+                  strokeWidth="2.5"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
               )}
-            </div>
-          ))}
+
+              {/* Nodes and Value Labels */}
+              {svgCoords.map((pt) => {
+                const isSelected = selectedPointIndex === pt.index;
+
+                return (
+                  <g
+                    key={pt.index}
+                    className="cursor-pointer transition-all"
+                    onClick={() => setSelectedPointIndex(pt.index)}
+                  >
+                    {/* Value Badge Text Above Node */}
+                    <text
+                      x={pt.x}
+                      y={pt.y - 8}
+                      textAnchor="middle"
+                      className={`text-[10px] font-semibold select-none ${
+                        isSelected ? 'fill-[#1a73e8]' : 'fill-[#202124]'
+                      }`}
+                    >
+                      {pt.num}
+                    </text>
+
+                    {/* Outer Glow / Ring for Selected */}
+                    {isSelected && (
+                      <circle
+                        cx={pt.x}
+                        cy={pt.y}
+                        r="7"
+                        fill="#e8f0fe"
+                        stroke="#1a73e8"
+                        strokeWidth="2"
+                      />
+                    )}
+
+                    {/* Core Point Circle */}
+                    <circle
+                      cx={pt.x}
+                      cy={pt.y}
+                      r={isSelected ? "4" : "3"}
+                      fill={isSelected ? "#1a73e8" : "#ffffff"}
+                      stroke="#1a73e8"
+                      strokeWidth="2"
+                    />
+
+                    {/* Timestamp label on axis */}
+                    <text
+                      x={pt.x}
+                      y={chartHeight - 4}
+                      textAnchor="middle"
+                      className="text-[9px] fill-[#5f6368] select-none"
+                    >
+                      {pt.timestamp.split('(')[0].trim()}
+                    </text>
+                  </g>
+                );
+              })}
+            </svg>
+          </div>
+        </div>
+
+        {/* Data Cards for Intervals */}
+        <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-2.5">
+          {briefing.physiologicalTrajectory.history.map((step, idx) => {
+            const isSelected = selectedPointIndex === idx;
+
+            return (
+              <div
+                key={idx}
+                onClick={() => setSelectedPointIndex(idx)}
+                className={`p-3 rounded-lg border transition-all cursor-pointer ${
+                  isSelected
+                    ? 'border-[#1a73e8] bg-white ring-1 ring-[#1a73e8] shadow-xs'
+                    : 'border-[#dadce0] bg-[#f8f9fa] hover:bg-white'
+                }`}
+              >
+                <div className="flex items-center justify-between text-[11px] text-[#5f6368]">
+                  <span className="font-medium">{step.timestamp}</span>
+                  {isSelected && (
+                    <span className="w-2 h-2 rounded-full bg-[#1a73e8]" />
+                  )}
+                </div>
+                <p className="text-xs font-semibold text-[#202124] mt-1">{step.scoreOrValue}</p>
+
+                {step.parameters && (
+                  <div className="pt-1.5 border-t border-[#dadce0] grid grid-cols-2 gap-1 text-[10px] mt-1.5">
+                    {Object.entries(step.parameters).map(([key, val]) => (
+                      <div key={key} className="truncate">
+                        <span className="text-[#5f6368]">{key}: </span>
+                        <span className="font-medium text-[#202124]">{val}</span>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            );
+          })}
         </div>
       </div>
 
@@ -223,9 +414,36 @@ export const PreConsultBriefingTab: React.FC<PreConsultBriefingTabProps> = ({
               </h4>
               <p className="text-[11px] text-[#5f6368]">Actionable register monitoring</p>
             </div>
-            <span className="text-xs font-medium px-2 py-0.5 rounded bg-[#f1f3f4] text-[#3c4043] border border-[#dadce0]">
-              {briefing.gapsInCare.length} Actionable
-            </span>
+
+            {/* Care Gap Resolution Ring Gauge */}
+            <div className="flex items-center space-x-3">
+              <div className="relative w-8 h-8 flex items-center justify-center flex-shrink-0" title={`${percentGapsResolved}% resolved`}>
+                <svg className="w-8 h-8 -rotate-90" viewBox="0 0 36 36">
+                  <path
+                    className="text-[#dadce0]"
+                    strokeWidth="3.5"
+                    stroke="currentColor"
+                    fill="none"
+                    d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
+                  />
+                  <path
+                    className="text-[#1a73e8] transition-all duration-500"
+                    strokeDasharray={`${percentGapsResolved}, 100`}
+                    strokeWidth="3.5"
+                    strokeLinecap="round"
+                    stroke="currentColor"
+                    fill="none"
+                    d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
+                  />
+                </svg>
+                <span className="absolute text-[9px] font-bold text-[#202124]">
+                  {percentGapsResolved}%
+                </span>
+              </div>
+              <span className="text-xs font-medium px-2 py-0.5 rounded bg-[#f1f3f4] text-[#3c4043] border border-[#dadce0]">
+                {totalGaps - resolvedGapsCount} Overdue
+              </span>
+            </div>
           </div>
 
           <div className="space-y-2.5">
@@ -275,126 +493,66 @@ export const PreConsultBriefingTab: React.FC<PreConsultBriefingTabProps> = ({
           </div>
         </div>
 
-        {/* Targeted Questions & Red Flags */}
-        <div className="space-y-4">
-          {/* Targeted Inquiries */}
-          <div className="bg-white rounded-xl border border-[#dadce0] p-5 shadow-xs space-y-3">
-            <div className="flex items-center justify-between pb-2.5 border-b border-[#f1f3f4]">
-              <div>
-                <h4 className="text-xs font-semibold text-[#202124] uppercase tracking-wider">
-                  Targeted Inquiries
-                </h4>
-                <p className="text-[11px] text-[#5f6368]">Diagnostic prompts for this visit</p>
-              </div>
-              <span className="text-xs text-[#5f6368]">
-                {briefing.suggestedQuestions.length} Questions
-              </span>
+        {/* Red Flag Checklist (COLOR draws attention to unassessed flags) */}
+        <div className="bg-white rounded-xl border border-[#dadce0] p-5 shadow-xs space-y-3">
+          <div className="flex items-center justify-between pb-2.5 border-b border-[#f1f3f4]">
+            <div>
+              <h4 className="text-xs font-semibold text-[#202124] uppercase tracking-wider">
+                Red Flag Rule-Out Checklist
+              </h4>
+              <p className="text-[11px] text-[#5f6368]">Critical safety-netting</p>
             </div>
-
-            <div className="space-y-2.5">
-              {briefing.suggestedQuestions.map((q) => {
-                const isAsked = !!askedQuestions[q.id];
-
-                return (
-                  <div
-                    key={q.id}
-                    className={`p-3 rounded-lg border transition-colors ${
-                      isAsked
-                        ? 'bg-[#f8f9fa] border-[#dadce0] opacity-60'
-                        : 'bg-white border-[#dadce0]'
-                    }`}
-                  >
-                    <div className="flex items-start space-x-2.5">
-                      <button
-                        onClick={() => toggleQuestion(q.id)}
-                        className={`mt-0.5 w-4 h-4 rounded border flex items-center justify-center transition-colors flex-shrink-0 ${
-                          isAsked
-                            ? 'bg-[#1a73e8] border-[#1a73e8] text-white'
-                            : 'border-[#bdc1c6] hover:border-[#1a73e8] bg-white'
-                        }`}
-                        title="Mark asked"
-                      >
-                        {isAsked && <CheckCircle2 className="w-3 h-3" />}
-                      </button>
-                      <div className="space-y-0.5">
-                        <span className="text-[10px] font-medium px-1.5 py-0.2 rounded bg-[#f1f3f4] text-[#3c4043] border border-[#dadce0]">
-                          {q.targetCondition}
-                        </span>
-                        <p className={`text-xs font-medium ${isAsked ? 'line-through text-[#5f6368]' : 'text-[#202124]'}`}>
-                          &ldquo;{q.question}&rdquo;
-                        </p>
-                        <p className="text-[11px] text-[#5f6368]">
-                          Rationale: {q.rationale}
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
+            <span className="text-xs font-medium text-red-700">Safety Net</span>
           </div>
 
-          {/* Red Flag Checklist (COLOR draws attention to unassessed flags) */}
-          <div className="bg-white rounded-xl border border-[#dadce0] p-5 shadow-xs space-y-3">
-            <div className="flex items-center justify-between pb-2.5 border-b border-[#f1f3f4]">
-              <div>
-                <h4 className="text-xs font-semibold text-[#202124] uppercase tracking-wider">
-                  Red Flag Rule-Out Checklist
-                </h4>
-                <p className="text-[11px] text-[#5f6368]">Critical safety-netting</p>
-              </div>
-              <span className="text-xs font-medium text-red-700">Safety Net</span>
-            </div>
+          <div className="space-y-2">
+            {briefing.redFlags.map((rf) => {
+              const isChecked = !!assessedRedFlags[rf.id];
 
-            <div className="space-y-2">
-              {briefing.redFlags.map((rf) => {
-                const isChecked = !!assessedRedFlags[rf.id];
-
-                return (
-                  <div
-                    key={rf.id}
-                    className={`p-2.5 rounded-lg border transition-colors ${
-                      isChecked
-                        ? 'bg-[#f8f9fa] border-[#dadce0] opacity-70'
-                        : rf.status === 'requires_assessment'
-                          ? 'bg-red-50/40 border-red-200'
-                          : 'bg-white border-[#dadce0]'
-                    }`}
-                  >
-                    <div className="flex items-start space-x-2.5">
-                      <button
-                        onClick={() => toggleRedFlag(rf.id)}
-                        className={`mt-0.5 w-4 h-4 rounded border flex items-center justify-center transition-colors flex-shrink-0 ${
+              return (
+                <div
+                  key={rf.id}
+                  className={`p-2.5 rounded-lg border transition-colors ${
+                    isChecked
+                      ? 'bg-[#f8f9fa] border-[#dadce0] opacity-70'
+                      : rf.status === 'requires_assessment'
+                        ? 'bg-red-50/40 border-red-200'
+                        : 'bg-white border-[#dadce0]'
+                  }`}
+                >
+                  <div className="flex items-start space-x-2.5">
+                    <button
+                      onClick={() => toggleRedFlag(rf.id)}
+                      className={`mt-0.5 w-4 h-4 rounded border flex items-center justify-center transition-colors flex-shrink-0 ${
+                        isChecked
+                          ? 'bg-[#1a73e8] border-[#1a73e8] text-white'
+                          : 'border-[#bdc1c6] hover:border-red-500 bg-white'
+                      }`}
+                      title="Mark assessed"
+                    >
+                      {isChecked && <CheckCircle2 className="w-3 h-3" />}
+                    </button>
+                    <div className="text-xs space-y-0.5">
+                      <div className="flex items-center gap-2">
+                        <span className="font-medium text-[#202124]">{rf.symptom}</span>
+                        <span className={`text-[10px] font-medium px-1.5 py-0.2 rounded border ${
                           isChecked
-                            ? 'bg-[#1a73e8] border-[#1a73e8] text-white'
-                            : 'border-[#bdc1c6] hover:border-red-500 bg-white'
-                        }`}
-                        title="Mark assessed"
-                      >
-                        {isChecked && <CheckCircle2 className="w-3 h-3" />}
-                      </button>
-                      <div className="text-xs space-y-0.5">
-                        <div className="flex items-center gap-2">
-                          <span className="font-medium text-[#202124]">{rf.symptom}</span>
-                          <span className={`text-[10px] font-medium px-1.5 py-0.2 rounded border ${
-                            isChecked
-                              ? 'bg-[#f1f3f4] text-[#5f6368] border-[#dadce0]'
-                              : rf.status === 'requires_assessment'
-                                ? 'bg-red-50 text-red-800 border-red-200'
-                                : 'bg-[#f1f3f4] text-[#3c4043] border-[#dadce0]'
-                          }`}>
-                            {isChecked ? 'RULED OUT' : rf.status.replace('_', ' ').toUpperCase()}
-                          </span>
-                        </div>
-                        <p className="text-[#5f6368]">
-                          <strong className="text-[#3c4043]">Rule out:</strong> {rf.ruleOut}
-                        </p>
+                            ? 'bg-[#f1f3f4] text-[#5f6368] border-[#dadce0]'
+                            : rf.status === 'requires_assessment'
+                              ? 'bg-red-50 text-red-800 border-red-200'
+                              : 'bg-[#f1f3f4] text-[#3c4043] border-[#dadce0]'
+                        }`}>
+                          {isChecked ? 'RULED OUT' : rf.status.replace('_', ' ').toUpperCase()}
+                        </span>
                       </div>
+                      <p className="text-[#5f6368]">
+                        <strong className="text-[#3c4043]">Rule out:</strong> {rf.ruleOut}
+                      </p>
                     </div>
                   </div>
-                );
-              })}
-            </div>
+                </div>
+              );
+            })}
           </div>
         </div>
       </div>
