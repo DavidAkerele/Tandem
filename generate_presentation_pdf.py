@@ -564,7 +564,7 @@ def build_presentation_pdf(filename="TandemDischarge_Presentation.pdf"):
 
     gov_data = [
         [Paragraph("<b>Interactive Source Tracing</b>", table_header),
-         Paragraph("<b>Contradiction Detection & Safety Gate</b>", table_header),
+         Paragraph("<b>Dual-Axis Contradiction & Safety Gate</b>", table_header),
          Paragraph("<b>Zero-Slop Code Standard</b>", table_header)],
         [Paragraph(
             "Clicking any assertion in the synthesized note instantly highlights the underlying sentence in the raw chronological ward notes.<br/><br/>"
@@ -572,8 +572,8 @@ def build_presentation_pdf(filename="TandemDischarge_Presentation.pdf"):
             table_cell
          ),
          Paragraph(
-            "Automated conflict engine detects cross-record contradictions (e.g. penicillin anaphylaxis vs Co-Amoxiclav order, K+ 6.8 hyperkalemia vs Spironolactone).<br/><br/>"
-            "<b>Locks dispatch until doctor signs off.</b>",
+            "Automated engine reconciles <b>System Errors</b> (HL7 52-min buffer queue lag, transit hemolysis) and <b>Human Factors</b> (fatigue allergy slip, EHR copy-paste).<br/><br/>"
+            "<b>Locks dispatch until clinician signs off.</b>",
             table_cell
          ),
          Paragraph(

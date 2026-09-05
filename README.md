@@ -110,11 +110,25 @@ Every patient case is linked to high-resolution, clinically authentic diagnostic
 - **Smoothed Left Timeline Bar:** Smooth text clamping with inline *"Read full note / Show less"* toggles to prevent text overload.
 
 ### 5. Automated Contradiction Detection & Human-in-the-Loop Safety Gate (Failure Case Scenario)
-To protect clinicians and patients from hazardous discrepancies across fragmented records, Tandem features an automated **Clinical Data Contradiction Detection Engine** (demonstrated in **Mr. Robert Hall, 64yo M**):
-- **Lethal Drug-Allergy Interception:** Flags a life-threatening penicillin anaphylaxis allergy vs. an inadvertent ward round prescription for Co-Amoxiclav (a penicillin derivative), blocking autonomous dispatch.
-- **Biochemistry Mismatch Alert:** Detects a critical high serum potassium (**K+ 6.8 mmol/L**) and peaked T-waves on ECG conflicting with a mistaken ward round entry ordering Spironolactone (potassium-sparing).
-- **Radiology vs. Clerking Discrepancy:** Detects when a draft surgical clerking mistakenly lists cholecystitis while the formal CT scan confirms severe bilateral aspiration pneumonia.
-- **Mandatory Safety Gate:** When data contradicts, the primary dispatch button is locked (`Safety Locked`), displaying a high-contrast clinical alert banner that requires a doctor to review side-by-side sources and sign off before discharge documents can be finalized.
+Under NHS **DCB0129** (clinical risk management for health IT software manufacturers) and **DCB0160** (clinical safety in deployment environments), catastrophic healthcare errors are rarely purely clinician mistakes or purely software bugs—they are socio-technical. Tandem’s automated **Clinical Safety & Contradiction Resolution Engine** (demonstrated in **Mr. Robert Hall, 64yo M**) classifies and reconciles discrepancies across two distinct failure vectors:
+
+#### A. System & Telemetry Errors (Hardware, Logistics & Integration Failures)
+- **HL7 v2.5.1 Integration Queue Latency (`Broker-Node-04` Lag):** Hospital microbiology issued an urgent antibiogram broadcast at 08:15 AM indicating resistant *Klebsiella pneumoniae*. An HL7 interface buffer queue overflow (latency: 52 mins) delayed the packet, causing the draft discharge engine to generate with stale Day 2 empiric data. Tandem catches this out-of-sequence packet, surfaces raw telemetry logs (`ERR-HL7-TIMEOUT: MSH|^~\&|SUNQUEST|PATH|EPIC`), flushes the gateway buffer, and synchronizes targeted non-beta-lactam sensitivity coverage.
+- **Pneumatic Transit Hemolysis Artifact (`Roche Cobas 8000 HIL +++`):** Excessive g-force acceleration in Pneumatic Tube Station 4B sheared erythrocyte membranes, releasing intracellular potassium into plasma (falsely elevating serum K+ to **6.8 mmol/L**). Tandem cross-references the raw analyzer telemetry (`HIL Index +340 (GROSS HEMOLYSIS)`), blocking false hyperkalemia overtreatment while prompting an urgent bedside point-of-care venous blood gas.
+
+#### B. Human Factors & Cognitive Errors (Clinician Workload & EHR Interface Slips)
+- **Cognitive Overload & Handover Omission (Penicillin Anaphylaxis):** During night shift cross-cover, an on-call FY1 doctor selected Co-Amoxiclav 1.2g IV from a CPOE quick-order dropdown without cross-referencing the patient’s red anaphylaxis allergy banner. Tandem blocks synthesis and forces immediate substitution with a safe alternative.
+- **EHR Template Duplication Slip (Adjacent Bed Copy-Paste):** A cross-cover surgical SHO copied the clinical handover note from Bed 11 (patient with acute cholecystitis) into Bed 12 (Mr. Robert Hall). Tandem performs semantic cross-validation against the formal Consultant Radiologist CT report (confirming severe bilateral aspiration pneumonia), eradicating wrong-patient coding slips.
+
+#### C. Safety Gate Enforcement & Audit Trail
+| Conflict ID | Failure Vector | Root Cause Mechanism | Protocol Mitigation |
+| :--- | :--- | :--- | :--- |
+| `conflict-penicillin-coamox` | **Human Factor** | Cognitive fatigue & quick-order dropdown omission | Cancel Co-Amoxiclav; enforce Allergy Cross-Check |
+| `conflict-potassium-spironolactone` | **Hybrid Socio-Technical** | Pneumatic shear hemolysis + unverified drug order | Hold Spironolactone; verify VBG via hand portering |
+| `conflict-radiology-diagnosis` | **Human Factor** | Adjacent bed template copy-paste error | Reconcile diagnosis with formal CT PACS report |
+| `conflict-hl7-microbiology-latency` | **System Error** | HL7 broker buffer queue 52-minute telemetry lag | Flush gateway buffer; update targeted sensitivity |
+
+When any contradiction is active, the primary dispatch button is locked (`Safety Locked`), displaying a high-contrast clinical alert banner requiring a registered clinician (e.g. Dr. Alex Smith, GMC 7849201) to verify side-by-side sources and apply mitigations before discharge documents can be finalized.
 
 ---
 

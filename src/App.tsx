@@ -148,6 +148,26 @@ export const App: React.FC = () => {
               citationId: 'ev-hall-ct-scan',
             };
           }
+          if (contradictionId === 'conflict-hl7-microbiology-latency') {
+            const hasCipro = updatedSummary.medications.some((m) =>
+              m.drugName.toLowerCase().includes('ciprofloxacin')
+            );
+            if (!hasCipro) {
+              updatedSummary.medications.push({
+                id: 'med-hall-cipro',
+                drugName: 'Ciprofloxacin (Oral)',
+                dischargeDose: '500mg BD for 5 more days (Total 7-day course)',
+                route: 'Oral',
+                frequency: 'Twice daily',
+                status: 'started',
+                indication: 'Targeted sensitivity for Klebsiella pneumonia (HL7 antibiogram sync)',
+                clinicalRationale: 'Synchronized via HL7 gateway cache flush; replaces empiric beta-lactams.',
+                plannedDuration: '5 days',
+                gpInstructions: 'Ensure completion of full 7-day course. Stop if tendon pain or neuro symptoms develop.',
+                sourceCitationId: 'ev-hall-hl7-lag',
+              });
+            }
+          }
 
           return {
             ...c,

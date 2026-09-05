@@ -263,16 +263,34 @@ export interface ContradictionResolutionOption {
   isRecommended?: boolean;
 }
 
+export type ContradictionRootCause = 'human_error' | 'system_error' | 'hybrid_error';
+
+export interface SystemErrorDetails {
+  systemComponent: string;
+  failureMechanism: string;
+  telemetryLog?: string;
+  mitigationProtocol: string;
+}
+
+export interface HumanErrorDetails {
+  clinicalRole: string;
+  contributingFactor: string;
+  errorType: 'transcription_slip' | 'wrong_patient_copy_paste' | 'omission_during_handover' | 'rule_violation';
+}
+
 export interface DataContradiction {
   id: string;
   severity: 'critical' | 'high' | 'moderate';
-  category: 'allergy_medication' | 'biochemistry_prescription' | 'radiology_diagnosis' | 'clinical_history';
+  category: 'allergy_medication' | 'biochemistry_prescription' | 'radiology_diagnosis' | 'clinical_history' | 'telemetry_sync_latency';
+  errorOrigin: ContradictionRootCause;
   title: string;
   description: string;
   clinicalRisk: string;
   sources: ContradictionSource[];
   suggestedResolution: string;
   resolutionOptions: ContradictionResolutionOption[];
+  systemError?: SystemErrorDetails;
+  humanError?: HumanErrorDetails;
   isResolved?: boolean;
   selectedResolutionId?: string;
   resolvedBy?: string;
